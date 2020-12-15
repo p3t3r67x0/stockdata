@@ -98,8 +98,10 @@ db[sys.argv[1]].create_index(
     [('symbol', ASCENDING), ('timestamp', ASCENDING)], unique=True
 )
 
-# t = load_tickers()
-t = [sys.argv[2]]
+if len(sys.argv) == 2:
+    t = load_tickers()
+else:
+    t = [sys.argv[2]]
 
 for i in t:
     request_download(db, i.strip())
