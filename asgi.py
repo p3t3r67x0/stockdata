@@ -66,7 +66,7 @@ async def read_symbols(db):
 
 
 async def read_info(db, symbol):
-    res = await db['info'].find({'symbol': symbol})
+    res = await db['info'].find_one({'symbol': symbol})
 
     return res
 
