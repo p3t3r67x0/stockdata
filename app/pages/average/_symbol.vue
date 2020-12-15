@@ -1,7 +1,10 @@
 <template>
 <div>
+  <div v-if="'averages' in avgData && avgData.averages.length > 0" class="mb-6">
+    <h1 class="text-teal-900 text-4xl font-bold font-sans"><span class="bg-red-500 text-white px-1">{{ avgData['symbol'] }}</span> {{ avgData['long_name']}}</h1>
+  </div>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
-    <tr class="bg-teal-900 text-white text-md">
+    <tr class="bg-gray-700 text-white text-md">
       <th class="w-2/6 text-left px-3 py-1">Unit</th>
       <th class="w-1/6 text-left px-3 py-1">Start</th>
       <th class="w-1/6 text-left px-3 py-1">End</th>
@@ -27,7 +30,7 @@
     </tr>
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
-    <tr class="bg-teal-900 text-white text-md">
+    <tr class="bg-gray-700 text-white text-md">
       <th class="w-2/6 text-left px-3 py-1">Unit</th>
       <th class="w-1/6 text-left px-3 py-1">Start</th>
       <th class="w-1/6 text-left px-3 py-1">End</th>
@@ -53,7 +56,7 @@
     </tr>
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
-    <tr class="bg-teal-900 text-white text-md">
+    <tr class="bg-gray-700 text-white text-md">
       <th class="w-2/6 text-left px-3 py-1">Unit</th>
       <th class="w-1/6 text-left px-3 py-1">Start</th>
       <th class="w-1/6 text-left px-3 py-1">End</th>
@@ -79,7 +82,7 @@
     </tr>
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
-    <tr class="bg-teal-900 text-white text-md">
+    <tr class="bg-gray-700 text-white text-md">
       <th class="w-2/6 text-left px-3 py-1">Unit</th>
       <th class="w-1/6 text-left px-3 py-1">Start</th>
       <th class="w-1/6 text-left px-3 py-1">End</th>
@@ -105,7 +108,7 @@
     </tr>
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
-    <tr class="bg-teal-900 text-white text-md">
+    <tr class="bg-gray-700 text-white text-md">
       <th class="w-2/6 text-left px-3 py-1">Unit</th>
       <th class="w-1/6 text-left px-3 py-1">Start</th>
       <th class="w-1/6 text-left px-3 py-1">End</th>

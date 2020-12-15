@@ -183,5 +183,5 @@ async def average_values(symbol):
         db, symbol, 'adjust_close_eur', 30)
     object['adjust_thirty_days'] = adjust_thirty_days
 
-    return {'averages': [object], 'isin': metadata['isin'],
+    return {'averages': [object], 'symbol': symbol, 'isin': metadata['isin'],
             'long_name': metadata['long_name']}

@@ -1,8 +1,8 @@
 <template>
 <div v-click-outside="hideNav" class="sm:flex sm:min-h-screen h-12 sm:h-auto">
   <div class="fixed w-full top-0 left-0 sm:w-64 overflow-y-auto transition duration-300 transform ease-in overflow-y-auto sm:translate-x-0 sm:static sm:inset-0 z-50 sm:z-0 bg-gray-900">
-    <div class="flex justify-between items-center bg-gray-900 sm:border-b-4 sm:border-gray-900 h-12 sm:h-16 lg:h-20">
-      <p class="text-white text-3xl px-2 sm:px-4">stocklify.dev</p>
+    <div class="flex justify-center items-center bg-teal-700 sm:border-b-4 sm:border-gray-900 h-12 sm:h-16 lg:h-20">
+      <p class="front-sans text-white text-2xl sm:text-3xl px-2 sm:px-4">stocklify.xyz</p>
     </div>
 
     <ul :class="[showNav ? 'block z-50' : 'hidden']" class="sm:block sm:mt-8">
