@@ -6,6 +6,7 @@ import yfinance as yf
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 from datetime import date, datetime, timedelta
+from backports.zoneinfo import ZoneInfo
 
 
 def connect_mongodb():
@@ -26,9 +27,13 @@ def download_dataset(symbol, start, end):
     return d
 
 
-def query_fortex(db, timestamp):
-    res = db['fortex'].find_one({'timestamp': timestamp})
+def query_forex(db, timestamp):
+    print(timestamp)
 
+    gmt = timestamp.replace(tzinfo=ZoneInfo('GMT'))
+
+    res = db['forex'].find_one({'timestamp': gmt})
+    print(res)
     return res
 
 
@@ -37,7 +42,7 @@ def insert_dataframes(db, d, s):
 
     for i in d.iterrows():
         if sys.argv[1] == 'data':
-            fortex = query_fortex(db, i[0])
+            forex = query_forex(db, i[0])
 
             high_eur = None
             low_eur = None
@@ -45,12 +50,12 @@ def insert_dataframes(db, d, s):
             close_eur = None
             adjust_close_eur = None
 
-            if fortex:
-                high_eur = list(fortex)[0]['high'] * i[1][1]
-                low_eur = list(fortex)[0]['low'] * i[1][2]
-                open_eur = list(fortex)[0]['open'] * i[1][0]
-                close_eur = list(fortex)[0]['close'] * i[1][3]
-                adjust_close_eur = list(fortex)[0]['adjust_close'] * i[1][4]
+            if forex:
+                high_eur = forex['high'] * i[1][1]
+                low_eur = forex['low'] * i[1][2]
+                open_eur = forex['open'] * i[1][0]
+                close_eur = forex['close'] * i[1][3]
+                adjust_close_eur = forex['adjust_close'] * i[1][4]
 
             data = {'timestamp': i[0], 'open': i[1][0], 'high': i[1][1],
                     'low': i[1][2], 'close': i[1][3], 'volume': i[1][5],
@@ -66,8 +71,7 @@ def insert_dataframes(db, d, s):
         try:
             db[sys.argv[1]].insert_one(data)
 
-            print(s, i[0], i[1][0], i[1][1], i[1]
-                  [2], i[1][3], i[1][4], i[1][5])
+            print(data)
         except DuplicateKeyError:
             print(f'ERROR: duplicate key {i[0]} with symbol {s}')
 
