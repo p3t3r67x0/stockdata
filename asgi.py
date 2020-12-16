@@ -11,6 +11,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymongo import ASCENDING, TEXT
 from datetime import date, datetime, timedelta
 
+from pydantic import BaseSettings
+
+
+class Settings(BaseSettings):
+    app_name: str = 'stocklify'
+    admin_email: str
+    app_url: str
+
+    class Config:
+        env_file = '.env'
+
 
 def is_nan(v):
     return math.isnan(v)
@@ -98,7 +109,7 @@ db['info'].create_index(
 )
 
 origins = [
-    'http://localhost:3000'
+    Settings().app_url
 ]
 
 app.add_middleware(
