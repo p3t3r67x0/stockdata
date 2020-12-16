@@ -7,9 +7,9 @@
 
     <ul :class="[showNav ? 'block z-50' : 'hidden']" class="sm:block sm:mt-8">
       <li @click="toggleNav" :class="[comparePageName('dashboard') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/symbols">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
+          <span class="col-span-5">Symbols</span>
         </nuxt-link>
       </li>
       <li @click="toggleNav" :class="[comparePageName('organization') ? activeClass : inactiveClass]" class="text-white">

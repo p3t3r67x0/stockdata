@@ -164,7 +164,6 @@ export default {
   created() {
     this.maxValue = max(data, d => d.high).toFixed(2)
 
-    console.log(this.$route.params.symbol)
     this.$axios.$get(`${process.env.API_URL}/average/${this.$route.params.symbol}`).then(res => {
       this.avgData = res
     })

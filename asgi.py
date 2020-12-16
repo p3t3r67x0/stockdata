@@ -76,6 +76,16 @@ async def read_symbols(db):
     return res
 
 
+async def read_short_info(db):
+    res = await db['info'].aggregate([{'$sort': {'symbol': 1}},
+                                      {'$project': {'_id': '$symbol',
+                                                    'isin': '$isin',
+                                                    'long_name': '$long_name'}}
+                                      ]).to_list(length=100000)
+
+    return res
+
+
 async def read_info(db, symbol):
     res = await db['info'].find_one({'symbol': symbol})
 
@@ -86,7 +96,7 @@ async def lookup_query(db, q):
     res = await db['data'].aggregate([{'$match': {'$text': {'$search': q}}},
                                       {'$project': {'_id': 0, 'symbol': 1,
                                                     'isin': 1, 'long_name': 1}}
-                                      ]).to_list(length=10000)
+                                      ]).to_list(length=100000)
 
     return res
 
@@ -133,6 +143,14 @@ async def list_all_symbols():
     symbols = await read_symbols(db)
 
     return {'symbols': [s for s in symbols]}
+
+
+@app.get('/infos/short')
+async def list_all_short_infos():
+    values = await read_short_info(db)
+    print(values)
+
+    return {'values': [v for v in values]}
 
 
 @app.get('/average/{symbol}')
