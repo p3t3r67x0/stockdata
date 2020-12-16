@@ -1,19 +1,16 @@
 <template>
-<header class="hidden sm:flex justify-between items-center bg-color-form border-b-4 border-blue-550 h-16 lg:h-20 px-3 py-3 lg:px-6">
+<header class="hidden sm:flex justify-between items-center border-b-4 border-blue-500 h-16 lg:h-20 px-3 py-3 lg:px-6">
   <div class="w-full flex justify-between items-center">
-    <div class="hidden sm:block relative ml-3">
-      <div @click="toggleDropdown" class="focus:outline-none overflow-hidden cursor-pointer h-10 lg:h-12 w-10 lg:w-12">
-        <img src="/150.png" class="h-full w-full object-cover" />
-      </div>
+    <div class="w-full md:w-6/12 lg:w-5/12 xl:w-3/12 relative">
+      <div v-click-outside="toggleSearch" @keydown.esc="toggleSearch" class="relative">
+        <input v-model="searchTerm" @input="lookupSearchTerm" type="text" class="w-full rounded border focus:outline-none p-2">
 
-      <!-- <ul class="absolute right-0 mt-2 w-48 bg-color-nav overflow-hidden rounded shadow z-20">
-        <li @click="toggleDropdown">
-          <nuxt-link to="/settings" class="block px-4 py-2 text-sm text-color-nav hover:bg-gray-800 border-b border-color-form">Profile</nuxt-link>
-        </li>
-        <li @click="toggleDropdown">
-          <a class="cursor-pointer block px-4 py-2 text-sm text-color-nav hover:bg-gray-800">Logout</a>
-        </li>
-      </ul> -->
+        <div v-if="results.length > 0" class="w-full absolute z-30">
+          <div @click="setSerchTerm(result)" class="hover:bg-gray-300 bg-gray-200 border shadow p-3 cursor-pointer" v-for="result in results">
+            <span class="leading-5 text-gray-900"><strong>{{ result['symbol'] }}</strong>, {{ result['long_name'] }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -23,40 +20,17 @@
 export default {
   data() {
     return {
+      results: [],
       showDropdown: false,
-      searchTerm: '',
-      users: []
-    }
-  },
-  computed: {
-    avatar() {
-      return {
-        eyeType: '',
-        clotheType: '',
-        circleColor: '',
-        accessoriesType: '',
-        facialHairColor: '',
-        facialHairType: '',
-        clotheColor: '',
-        eyebrowType: '',
-        graphicType: '',
-        hairColor: '',
-        mouthType: '',
-        skinColor: '',
-        topColor: '',
-        topType: ''
-      }
-    },
-    availableLocales() {
-      return true; // this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
+      searchTerm: ''
     }
   },
   methods: {
     toggleSearch() {
-      this.users = []
+      this.results = []
     },
-    setSerchTerm(user) {
-      this.searchTerm = user.name
+    setSerchTerm(object) {
+      this.searchTerm = `${object['symbol']}, ${object['long_name']}`
       this.toggleSearch()
     },
     hideDropdown() {
@@ -65,24 +39,34 @@ export default {
     toggleDropdown() {
       return this.showDropdown = !this.showDropdown
     },
+    retrieveAverages() {
+      this.$axios({
+        method: 'GET',
+        url: `${process.env.API_URL}/query/${this.searchTerm}`,
+        validateStatus: () => true
+      }).then(res => {
+        if (res.status === 200) {}
+      })
+    },
     lookupSearchTerm() {
       if (this.searchTerm.length >= 1) {
         this.$axios({
-          method: 'POST',
-          url: `${process.env.API_URL}/lookup/users`,
-          data: {
-            name: this.searchTerm
-          },
+          method: 'GET',
+          url: `${process.env.API_URL}/query/${this.searchTerm}`,
           validateStatus: () => true
         }).then(res => {
+          this.results = []
+
           if (res.status === 200) {
-            this.users = res.data || []
-          } else {
-            console.debug(res.data)
+            if ('results' in res.data) {
+              this.results = res.data['results'] || []
+
+              this.$axios.$get()
+            }
           }
         })
       } else {
-        this.users = []
+        this.results = []
       }
     }
   }

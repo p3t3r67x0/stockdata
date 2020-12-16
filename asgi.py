@@ -93,9 +93,10 @@ async def read_info(db, symbol):
 
 
 async def lookup_query(db, q):
-    res = await db['data'].aggregate([{'$match': {'$text': {'$search': q}}},
+    res = await db['info'].aggregate([{'$match': {'$text': {'$search': q}}},
                                       {'$project': {'_id': 0, 'symbol': 1,
-                                                    'isin': 1, 'long_name': 1}}
+                                                    'isin': 1, 'long_name': 1}
+                                       }, {'$limit': 12}
                                       ]).to_list(length=100000)
 
     return res
