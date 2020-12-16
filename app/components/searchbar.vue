@@ -31,6 +31,12 @@ export default {
     },
     setSerchTerm(object) {
       this.searchTerm = `${object['symbol']}, ${object['long_name']}`
+      this.$router.push({
+        name: 'average-symbol',
+        params: {
+          symbol: object['symbol'].toLowerCase()
+        }
+      })
       this.toggleSearch()
     },
     hideDropdown() {
@@ -38,15 +44,6 @@ export default {
     },
     toggleDropdown() {
       return this.showDropdown = !this.showDropdown
-    },
-    retrieveAverages() {
-      this.$axios({
-        method: 'GET',
-        url: `${process.env.API_URL}/query/${this.searchTerm}`,
-        validateStatus: () => true
-      }).then(res => {
-        if (res.status === 200) {}
-      })
     },
     lookupSearchTerm() {
       if (this.searchTerm.length >= 1) {
@@ -60,8 +57,6 @@ export default {
           if (res.status === 200) {
             if ('results' in res.data) {
               this.results = res.data['results'] || []
-
-              this.$axios.$get()
             }
           }
         })

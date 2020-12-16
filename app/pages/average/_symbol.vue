@@ -167,8 +167,13 @@ export default {
     this.$axios.$get(`${process.env.API_URL}/average/${this.$route.params.symbol}`).then(res => {
       this.avgData = res
     })
+
+    console.log(this.name)
   },
   computed: {
+    name() {
+      return this.$route.name
+    },
     dataset() {
       if (this.filter) {
         if (this.filter[1] === "y") {
