@@ -151,7 +151,7 @@ async def average_values(symbol):
     object = {}
 
     symbol = symbol.upper()
-    metadata = await read_info(db, symbol)
+    meta = await read_info(db, symbol)
     symbols = await read_symbols(db)
 
     if symbol not in [s for s in symbols]:
@@ -205,5 +205,9 @@ async def average_values(symbol):
         db, symbol, 'adjust_close_eur', 30)
     object['adjust_thirty_days'] = adjust_thirty_days
 
-    return {'averages': [object], 'symbol': symbol, 'isin': metadata['isin'],
-            'long_name': metadata['long_name']}
+    return {'averages': object, 'symbol': symbol, 'isin': meta['isin'],
+            'long_name': meta['long_name'], 'zip': meta['zip'],
+            'industry': meta['industry'], 'address': meta['address1'],
+            'long_business_summary': meta['long_business_summary'],
+            'city': meta['city'], 'website': meta['website'],
+            'country': meta['country']}
