@@ -5,10 +5,10 @@
   </div>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
     <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left px-3 py-1">Unit</th>
-      <th class="w-1/6 text-left px-3 py-1">Start</th>
-      <th class="w-1/6 text-left px-3 py-1">End</th>
-      <th class="w-1/6 text-left px-3 py-1">Average</th>
+      <th class="w-2/6 text-left p-3">Unit</th>
+      <th class="w-1/6 text-left p-3">Start</th>
+      <th class="w-1/6 text-left p-3">End</th>
+      <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-100 text-lg">
       <td class="font-bold p-3">High 2 days</td>
@@ -31,10 +31,10 @@
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
     <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left px-3 py-1">Unit</th>
-      <th class="w-1/6 text-left px-3 py-1">Start</th>
-      <th class="w-1/6 text-left px-3 py-1">End</th>
-      <th class="w-1/6 text-left px-3 py-1">Average</th>
+      <th class="w-2/6 text-left p-3">Unit</th>
+      <th class="w-1/6 text-left p-3">Start</th>
+      <th class="w-1/6 text-left p-3">End</th>
+      <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-100 text-lg">
       <td class="font-bold p-3">Low 2 days</td>
@@ -57,10 +57,10 @@
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
     <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left px-3 py-1">Unit</th>
-      <th class="w-1/6 text-left px-3 py-1">Start</th>
-      <th class="w-1/6 text-left px-3 py-1">End</th>
-      <th class="w-1/6 text-left px-3 py-1">Average</th>
+      <th class="w-2/6 text-left p-3">Unit</th>
+      <th class="w-1/6 text-left p-3">Start</th>
+      <th class="w-1/6 text-left p-3">End</th>
+      <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-300 text-lg">
       <td class="font-bold p-3">Open 2 days</td>
@@ -83,10 +83,10 @@
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
     <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left px-3 py-1">Unit</th>
-      <th class="w-1/6 text-left px-3 py-1">Start</th>
-      <th class="w-1/6 text-left px-3 py-1">End</th>
-      <th class="w-1/6 text-left px-3 py-1">Average</th>
+      <th class="w-2/6 text-left p-3">Unit</th>
+      <th class="w-1/6 text-left p-3">Start</th>
+      <th class="w-1/6 text-left p-3">End</th>
+      <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-100 text-lg">
       <td class="font-bold p-3">Close 2 days</td>
@@ -109,10 +109,10 @@
   </table>
   <table v-if="'averages' in avgData && avgData.averages.length > 0" class="table-fixed w-full mb-6">
     <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left px-3 py-1">Unit</th>
-      <th class="w-1/6 text-left px-3 py-1">Start</th>
-      <th class="w-1/6 text-left px-3 py-1">End</th>
-      <th class="w-1/6 text-left px-3 py-1">Average</th>
+      <th class="w-2/6 text-left p-3">Unit</th>
+      <th class="w-1/6 text-left p-3">Start</th>
+      <th class="w-1/6 text-left p-3">End</th>
+      <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-300 text-lg">
       <td class="font-bold p-3">Adjust close 2 days</td>
