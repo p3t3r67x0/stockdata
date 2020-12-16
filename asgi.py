@@ -138,17 +138,9 @@ async def list_results(query):
     return {'results': [r for r in results]}
 
 
-@app.get('/symbols')
-async def list_all_symbols():
-    symbols = await read_symbols(db)
-
-    return {'symbols': [s for s in symbols]}
-
-
 @app.get('/infos/short')
 async def list_all_short_infos():
     values = await read_short_info(db)
-    print(values)
 
     return {'values': [v for v in values]}
 
