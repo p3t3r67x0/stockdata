@@ -138,8 +138,12 @@
   </table>
   <div class="text-lg">
     <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Address</h2>
+    <p v-if="'long_name' in avgData" class="mb-1">{{ avgData['long_name'] }}</p>
     <p v-if="'address' in avgData" class="mb-1">{{ avgData['address'] }}</p>
-    <p v-if="'zip' in avgData && 'city' in avgData" class="mb-1">{{ avgData['zip'] }} {{ avgData['city'] }}</p>
+    <p class="mb-1">
+      <span v-if="'zip' in avgData">{{ avgData['zip'] }}</span>
+      <span v-if="'city' in avgData">{{ avgData['city'] }}</span>
+    </p>
     <p v-if="'country' in avgData" class="mb-1">{{ avgData['country'] }}</p>
     <p v-if="'website' in avgData" class="mb-3">
       <a :href="avgData['website']" target="_blank" class="text-blue-500 hover:text-blue-700 focus:outline-none">{{ avgData['website'] }}</a>
