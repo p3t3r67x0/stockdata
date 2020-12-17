@@ -124,6 +124,14 @@ async def read_volume_interval(db, symbol):
                                                                 '$gte': end}}},
                                       {'$group': {'_id':
                                                   {'$dayOfYear': '$timestamp'},
+                                                  'high': {
+                                                      '$avg': '$high_eur'},
+                                                  'low': {
+                                                      '$avg': '$low_eur'},
+                                                  'open': {
+                                                      '$avg': '$open_eur'},
+                                                  'close': {
+                                                      '$avg': '$close_eur'},
                                                   'volume': {'$sum': '$volume'}
                                                   }}
                                       ]).to_list(length=100000)
@@ -134,7 +142,9 @@ async def read_volume_interval(db, symbol):
         day = dt + timedelta(days=r['_id'] - 1)
         day = day.date()
 
-        array.append({'day': day, 'volume': r['volume']})
+        array.append({'day': day, 'high': r['high'], 'low': r['low'],
+                      'open': r['open'], 'close': r['close'],
+                      'volume': r['volume']})
 
     data = sorted(array, key=lambda k: k['day'], reverse=True)
 
