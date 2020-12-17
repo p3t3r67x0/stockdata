@@ -227,7 +227,7 @@ async def average_values(symbol):
     if 'industry' in meta:
         industry = meta['industry']
 
-    if 'address' in meta:
+    if 'address1' in meta:
         address = meta['address1']
 
     if 'long_business_summary' in meta:
