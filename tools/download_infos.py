@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import re
+import sys
 import yfinance as yf
 
 from pymongo import MongoClient, ASCENDING
@@ -12,6 +14,11 @@ def connect_mongodb():
     c = MongoClient('mongodb://localhost:27017')
 
     return c['stockdata']
+
+
+def load_tickers():
+    with open(sys.argv[1], 'r') as f:
+        return f.readlines()
 
 
 def read_symbols(db):
@@ -246,6 +253,9 @@ def update_information(db, symbol, info):
     if 'symbol' in info:
         d['symbol'] = info['symbol']
 
+        if re.match(r'[\.]{1}', info['symbol']):
+            d['symbol'] = info['symbol'].split('.')[0]
+
     if 'messageBoardId' in info:
         d['message_board_id'] = info['messageBoardId']
 
@@ -400,7 +410,7 @@ def insert_essential(db, symbol, isin):
     try:
         db['info'].insert_one({'symbol': symbol, 'isin': isin})
     except DuplicateKeyError:
-        pass
+        print(f'ERROR: duplicate key with symbol {symbol}')
 
 
 db = connect_mongodb()
@@ -410,14 +420,15 @@ db['info'].create_index(
 )
 
 
-for symbol in [s for s in read_symbols(db)]:
+for symbol in load_tickers():
+    symbol = symbol.strip()
     res = read_symbol(db, symbol)
 
     if res is not None:
         continue
 
     info = yf.Ticker(symbol)
-    print(f'Extracting info for {symbol.upper()} with ISIN {info.isin}')
+    print(f'Extracting info for {symbol} with ISIN {info.isin}')
 
-    insert_essential(db, symbol.upper(), info.isin)
-    update_information(db, symbol.upper(), info.info)
+    insert_essential(db, symbol, info.isin)
+    update_information(db, symbol, info.info)
