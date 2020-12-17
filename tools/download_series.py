@@ -102,17 +102,17 @@ def handle_datestring(db, symbol, factor_start, factor_end):
 def request_download(db, symbol, flag):
     if flag == 'full':
         for i in range(4):
-            factor_end = i * 7 + 7
+            factor_end = i * 7 + 6
 
             if i > 0:
-                factor_start = i * 7 + 1
-            else:
                 factor_start = i * 7
+            else:
+                factor_start = i * 7 - 1
 
             handle_datestring(db, symbol, factor_start, factor_end)
 
         print()
-    else:
+    elif flag == 'short':
         factor_start = -1
         factor_end = 6
 
