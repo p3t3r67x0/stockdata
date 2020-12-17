@@ -199,6 +199,8 @@ async def list_all_short_infos():
 
 @app.get('/volume/{symbol}')
 async def volume_interval(symbol):
+    symbol = symbol.upper()
+
     res = await read_volume_interval(db, symbol)
 
     return res
