@@ -48,7 +48,7 @@ def insert_dataframes(db, d, s):
 
     for i in d.iterrows():
         if sys.argv[1] == 'data':
-            if a['currency'] != 'EUR':
+            if 'currency' in a and a['currency'] != 'EUR':
                 forex = query_forex(db, i[0])
 
                 if forex:

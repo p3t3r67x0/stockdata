@@ -428,7 +428,11 @@ for symbol in load_tickers():
         continue
 
     print(f'Going to extract fundatentals info for {symbol}')
-    info = yf.Ticker(symbol)
+
+    try:
+        info = yf.Ticker(symbol)
+    except IndexError:
+        continue
 
     insert_essential(db, symbol, info.isin)
     update_information(db, symbol, info.info)
