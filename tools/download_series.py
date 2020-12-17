@@ -133,4 +133,5 @@ elif len(sys.argv) == 5:
     t = [sys.argv[4]]
 
 for i in t:
+    print(f'Going to download dataframes for {i.upper().strip()}')
     request_download(db, i.upper().strip(), sys.argv[3])

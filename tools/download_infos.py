@@ -427,8 +427,8 @@ for symbol in load_tickers():
     if res is not None:
         continue
 
+    print(f'Going to extract fundatentals info for {symbol}')
     info = yf.Ticker(symbol)
-    print(f'Extracting info for {symbol} with ISIN {info.isin}')
 
     insert_essential(db, symbol, info.isin)
     update_information(db, symbol, info.info)
