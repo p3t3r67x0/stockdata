@@ -43,9 +43,10 @@ def download_dataset(symbol, start, end):
 
 async def read_average(db, symbol, field, days):
     data = {}
-    naive_datetime = datetime.combine(date.today(), datetime.max.time())
-    timezone = pytz.timezone('US/Eastern')
-    now = timezone.localize(naive_datetime)
+    dt = datetime.combine(date.today(), datetime.max.time())
+    tz_name = dt.astimezone().tzname()
+    tz = pytz.timezone(tz_name)
+    now = tz.localize(dt)
     weekday = now.weekday()
 
     if weekday == 5:
@@ -102,8 +103,46 @@ async def lookup_query(db, q):
     return res
 
 
+async def read_volume_interval(db, symbol):
+    array = []
+
+    dt = datetime.combine(date.today(), datetime.max.time())
+    tz_name = dt.astimezone().tzname()
+    tz = pytz.timezone(tz_name)
+    now = tz.localize(dt)
+    weekday = now.weekday()
+
+    if weekday == 5:
+        now = now - timedelta(days=1)
+    elif weekday == 6:
+        now = now - timedelta(days=2)
+
+    end = now - timedelta(days=30)
+
+    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
+                                                  'timestamp': {'$lt': now,
+                                                                '$gte': end}}},
+                                      {'$group': {'_id':
+                                                  {'$dayOfYear': '$timestamp'},
+                                                  'volume': {'$sum': '$volume'}
+                                                  }}
+                                      ]).to_list(length=100000)
+
+    for r in res:
+        dt = datetime.combine(
+            date(date.today().year, 1, 1), datetime.max.time())
+        day = dt + timedelta(days=r['_id'] - 1)
+        day = day.date()
+
+        array.append({'day': day, 'volume': r['volume']})
+
+    data = sorted(array, key=lambda k: k['day'], reverse=True)
+
+    return data
+
+
 async def retrieve_info(db, symbol):
-    res = await db['info'].find({'symbol': symbol}).to_list(length=10000)
+    res = await db['info'].find({'symbol': symbol}).to_list(length=100000)
 
     return res
 
@@ -144,6 +183,13 @@ async def list_all_short_infos():
     values = await read_short_info(db)
 
     return {'values': [v for v in values]}
+
+
+@app.get('/volume/{symbol}')
+async def volume_interval(symbol):
+    res = await read_volume_interval(db, symbol)
+
+    return res
 
 
 @app.get('/average/{symbol}')
