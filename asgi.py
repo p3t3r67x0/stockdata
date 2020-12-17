@@ -205,9 +205,44 @@ async def average_values(symbol):
         db, symbol, 'adjust_close_eur', 30)
     object['adjust_thirty_days'] = adjust_thirty_days
 
-    return {'averages': object, 'symbol': symbol, 'isin': meta['isin'],
-            'long_name': meta['long_name'], 'zip': meta['zip'],
-            'industry': meta['industry'], 'address': meta['address1'],
-            'long_business_summary': meta['long_business_summary'],
-            'city': meta['city'], 'website': meta['website'],
-            'country': meta['country']}
+    isin = ''
+    long_name = ''
+    zip = ''
+    industry = ''
+    address = ''
+    long_business_summary = ''
+    city = ''
+    website = ''
+    country = ''
+
+    if 'isin' in meta:
+        isin = meta['isin']
+
+    if 'long_name' in meta:
+        long_name = meta['long_name']
+
+    if 'zip' in meta:
+        zip = meta['zip']
+
+    if 'industry' in meta:
+        industry = meta['industry']
+
+    if 'address' in meta:
+        address = meta['address1']
+
+    if 'long_business_summary' in meta:
+        long_business_summary = meta['long_business_summary']
+
+    if 'city' in meta:
+        city = meta['city']
+
+    if 'website' in meta:
+        website = meta['website']
+
+    if 'country' in meta:
+        country = meta['country']
+
+    return {'averages': object, 'symbol': symbol, 'country': country,
+            'long_name': long_name, 'zip': zip, 'industry': industry,
+            'address': address, 'city': city, 'website': website,
+            'isin': isin, 'long_business_summary': long_business_summary}
