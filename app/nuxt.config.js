@@ -29,6 +29,9 @@ export default {
   plugins: [{
     src: '@/plugins/vClickOutside',
     ssr: false
+  }, {
+    src: '@/plugins/frappeCharts',
+    ssr: false
   }],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)

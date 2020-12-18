@@ -104,7 +104,7 @@ async def lookup_query(db, q):
 
 
 async def read_volume_interval(db, symbol):
-    array = []
+    data = []
 
     dt = datetime.combine(date.today(), datetime.max.time())
     tz_name = dt.astimezone().tzname()
@@ -133,22 +133,19 @@ async def read_volume_interval(db, symbol):
                                                   'close': {
                                                       '$last': '$close_eur'},
                                                   'volume': {'$sum': '$volume'}
-                                                  }}
+                                                  }},
+                                      {'$sort': {'_id': -1}},
                                       ]).to_list(length=100000)
 
     for r in res:
         dt = datetime.combine(
             date(date.today().year, 1, 1), datetime.max.time())
-        day = dt + timedelta(days=r['_id'] - 1)
-        day = day.date()
+        d = dt + timedelta(days=r['_id'] - 1)
+        ts = datetime.timestamp(d.replace(microsecond=0)) * 1000
 
-        array.append({'day': day, 'high': round(r['high'], 2),
-                      'low': round(r['low'], 2),
-                      'open': round(r['open'], 2),
-                      'close': round(r['close'], 2),
-                      'volume': round(r['volume'], 2)})
-
-    data = sorted(array, key=lambda k: k['day'], reverse=True)
+        data.append([ts, round(r['open'], 2),
+                     round(r['high'], 2), round(r['low'], 2),
+                     round(r['close'], 2), round(r['volume'], 2)])
 
     return data
 
