@@ -104,7 +104,12 @@ async def lookup_query(db, q):
 
 
 async def read_volume_interval(db, symbol):
-    data = []
+    dates = []
+    high = []
+    low = []
+    open = []
+    close = []
+    volumes = []
 
     dt = datetime.combine(date.today(), datetime.max.time())
     tz_name = dt.astimezone().tzname()
@@ -138,16 +143,19 @@ async def read_volume_interval(db, symbol):
                                       ]).to_list(length=100000)
 
     for r in res:
-        dt = datetime.combine(
+        dtc = datetime.combine(
             date(date.today().year, 1, 1), datetime.max.time())
-        d = dt + timedelta(days=r['_id'] - 1)
-        ts = datetime.timestamp(d.replace(microsecond=0)) * 1000
+        dt = dtc + timedelta(days=r['_id'] - 1)
 
-        data.append([ts, round(r['open'], 2),
-                     round(r['high'], 2), round(r['low'], 2),
-                     round(r['close'], 2), round(r['volume'], 2)])
+        dates.append(dt.date())
+        high.append(round(r['high'], 2))
+        low.append(round(r['low'], 2))
+        open.append(round(r['open'], 2))
+        close.append(round(r['close'], 2))
+        volumes.append(int(r['volume']))
 
-    return data
+    return {'volumes': volumes, 'dates': dates, 'high': high,
+            'low': low, 'open': open, 'close': close}
 
 
 async def retrieve_info(db, symbol):
@@ -199,6 +207,9 @@ async def volume_interval(symbol):
     symbol = symbol.upper()
 
     res = await read_volume_interval(db, symbol)
+
+    if res is not None:
+        pass
 
     return res
 
