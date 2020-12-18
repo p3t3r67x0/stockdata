@@ -139,7 +139,7 @@ async def read_volume_interval(db, symbol):
                                                       '$last': '$close_eur'},
                                                   'volume': {'$sum': '$volume'}
                                                   }},
-                                      {'$sort': {'_id': -1}},
+                                      {'$sort': {'_id': 1}},
                                       ]).to_list(length=100000)
 
     for r in res:
@@ -147,7 +147,7 @@ async def read_volume_interval(db, symbol):
             date(date.today().year, 1, 1), datetime.max.time())
         dt = dtc + timedelta(days=r['_id'] - 1)
 
-        dates.append(dt.date())
+        dates.append(f'{dt.day}.{dt.month}.')
         high.append(round(r['high'], 2))
         low.append(round(r['low'], 2))
         open.append(round(r['open'], 2))

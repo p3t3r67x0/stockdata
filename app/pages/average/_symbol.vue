@@ -6,8 +6,8 @@
       <span>{{ avgData['long_name']}}</span>
     </h1>
 
-    <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Volume chart</h2>
-    <chart-volumes :propSymbol="avgData['symbol']" />
+    <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Price chart</h2>
+    <chart-prices :propSymbol="avgData['symbol']" />
   </div>
   <table v-if="avgData && 'averages' in avgData" class="table-fixed w-full mb-6">
     <tr class="bg-gray-700 text-white text-md">
@@ -140,8 +140,8 @@
     </tr>
   </table>
   <div v-if="avgData && 'symbol' in avgData" class="mb-6">
-    <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Price chart</h2>
-    <chart-prices :propSymbol="avgData['symbol']" />
+    <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Volume chart</h2>
+    <chart-volumes :propSymbol="avgData['symbol']" />
   </div>
   <div class="text-lg">
     <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Address</h2>

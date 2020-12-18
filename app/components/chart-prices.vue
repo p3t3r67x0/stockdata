@@ -8,7 +8,7 @@ export default {
   data() {
     return {
       labels1: [],
-      colors1: ['red', 'orange', 'purple', 'green'],
+      colors1: ['red', 'orange', 'purple', '#4a5568'],
       chart1: [{
         name: 'High price',
         chartType: 'line',
