@@ -3,8 +3,8 @@
   <vue-frappe id="prices" :labels="labels1" type="line" :height="350" :colors="colors1" :dataSets="chart1" />
   <div>
     <button @click="retrieveData(30)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">30 day range</button>
-    <button @click="retrieveData(10)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">10 day range</button>
-    <button @click="retrieveData(1)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">2 day range</button>
+    <button @click="retrieveData(20)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">20 day range</button>
+    <button @click="retrieveData(1)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">15 min range</button>
   </div>
 </div>
 </template>
