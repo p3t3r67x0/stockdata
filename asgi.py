@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from pymongo import ASCENDING, TEXT
-from datetime import date, datetime, timedelta
+from datetime import time, date, datetime, timedelta
 
 from pydantic import BaseSettings
 
@@ -103,7 +103,61 @@ async def lookup_query(db, q):
     return res
 
 
-async def read_volume_interval(db, symbol):
+async def read_volume_monthly_interval(db, symbol, start, end):
+    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
+                                                  'timestamp': {'$lt': start,
+                                                                '$gte': end}}},
+                                      {'$group': {'_id':
+                                                  {'$dayOfYear': '$timestamp'},
+                                                  'high': {
+                                                      '$last': '$high_eur'},
+                                                  'low': {
+                                                      '$last': '$low_eur'},
+                                                  'open': {
+                                                      '$last': '$open_eur'},
+                                                  'close': {
+                                                      '$last': '$close_eur'},
+                                                  'volume': {'$sum': '$volume'}
+                                                  }},
+                                      {'$sort': {'_id': 1}},
+                                      ]).to_list(length=100000)
+
+    return res
+
+
+async def read_volume_daily_interval(db, symbol, start, end):
+    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
+                                                  'timestamp': {'$lt': start,
+                                                                '$gte': end}}},
+                                      {'$group':
+                                          {'_id': {'year':
+                                                   {'$year': '$timestamp'},
+                                                   'doy': {
+                                                       '$dayOfYear': '$timestamp'},
+                                                   'hrs': {'$hour': '$timestamp'},
+                                                   'min': {'$subtract': [
+                                                       {'$minute': '$timestamp'},
+                                                       {'$mod': [
+                                                           {'$minute': '$timestamp'},
+                                                           15]}]}},
+                                           'high': {
+                                              '$last': '$high_eur'},
+                                           'low': {
+                                              '$last': '$low_eur'},
+                                           'open': {
+                                              '$last': '$open_eur'},
+                                           'close': {
+                                              '$last': '$close_eur'},
+                                           'volume': {'$sum': '$volume'}
+                                           }},
+                                      {'$sort': {'year': 1, '_id.doy': 1,
+                                                 '_id.hrs': 1, '_id.min': 1}}
+                                      ]).to_list(length=100)
+
+    return res
+
+
+async def read_volume_interval(db, symbol, interval):
     dates = []
     high = []
     low = []
@@ -122,32 +176,27 @@ async def read_volume_interval(db, symbol):
     elif weekday == 6:
         now = now - timedelta(days=2)
 
-    end = now - timedelta(days=30)
+    end = now - timedelta(days=int(interval))
 
-    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
-                                                  'timestamp': {'$lt': now,
-                                                                '$gte': end}}},
-                                      {'$group': {'_id':
-                                                  {'$dayOfYear': '$timestamp'},
-                                                  'high': {
-                                                      '$last': '$high_eur'},
-                                                  'low': {
-                                                      '$last': '$low_eur'},
-                                                  'open': {
-                                                      '$last': '$open_eur'},
-                                                  'close': {
-                                                      '$last': '$close_eur'},
-                                                  'volume': {'$sum': '$volume'}
-                                                  }},
-                                      {'$sort': {'_id': 1}},
-                                      ]).to_list(length=100000)
+    if int(interval) == 1:
+        res = await read_volume_daily_interval(db, symbol, now, end)
+    else:
+        res = await read_volume_monthly_interval(db, symbol, now, end)
 
     for r in res:
-        dtc = datetime.combine(
-            date(date.today().year, 1, 1), datetime.max.time())
-        dt = dtc + timedelta(days=r['_id'] - 1)
+        if int(interval) == 1:
+            dt = r['_id']
+            dtc = datetime.combine(date(r['_id']['year'], 1, 1), time(
+                r['_id']['hrs'], r['_id']['min']))
+            dt = dtc + timedelta(days=r['_id']['doy'] - 1)
+            hm = dt.strftime('%I:%M')
+            dates.append(f'{hm}')
+        else:
+            dtc = datetime.combine(
+                date(date.today().year, 1, 1), datetime.max.time())
+            dt = dtc + timedelta(days=r['_id'] - 1)
+            dates.append(f'{dt.day}.{dt.month}.')
 
-        dates.append(f'{dt.day}.{dt.month}.')
         high.append(round(r['high'], 2))
         low.append(round(r['low'], 2))
         open.append(round(r['open'], 2))
@@ -188,33 +237,30 @@ app.add_middleware(
 )
 
 
-@app.get('/query/{query}')
+@ app.get('/query/{query}')
 async def list_results(query):
     results = await lookup_query(db, query)
 
     return {'results': [r for r in results]}
 
 
-@app.get('/infos/short')
+@ app.get('/infos/short')
 async def list_all_short_infos():
     values = await read_short_info(db)
 
     return {'values': [v for v in values]}
 
 
-@app.get('/volume/{symbol}')
-async def volume_interval(symbol):
+@ app.get('/volume/{symbol}/{interval}')
+async def volume_interval(symbol, interval):
     symbol = symbol.upper()
 
-    res = await read_volume_interval(db, symbol)
-
-    if res is not None:
-        pass
+    res = await read_volume_interval(db, symbol, interval)
 
     return res
 
 
-@app.get('/average/{symbol}')
+@ app.get('/average/{symbol}')
 async def average_values(symbol):
     object = {}
 

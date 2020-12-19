@@ -1,7 +1,10 @@
 <template>
 <div>
+  <vue-frappe id="volumes" :labels="labels0" type="bar" :height="350" :colors="colors0" :dataSets="chart0" />
   <div>
-    <vue-frappe id="volumes" :labels="labels0" type="bar" :height="350" :colors="colors0" :dataSets="chart0" />
+    <button @click="retrieveData(30)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">30 day range</button>
+    <button @click="retrieveData(10)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">10 day range</button>
+    <button @click="retrieveData(1)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">2 day range</button>
   </div>
 </div>
 </template>
@@ -38,20 +41,20 @@ export default {
     }
   },
   created() {
-    this.$axios.$get(`${process.env.API_URL}/volume/${this.symbol}`).then(res => {
-      this.chart0[0].values = res['volumes']
-      this.chart1[0].values = res['high']
-      this.chart1[1].values = res['low']
-      this.chart1[2].values = res['open']
-      this.chart1[3].values = res['close']
-      this.labels0 = res['dates']
-      this.labels1 = res['dates']
-    })
+    this.retrieveData(30)
   },
   props: ['propSymbol'],
   computed: {
     symbol() {
       return this.$props.propSymbol
+    }
+  },
+  methods: {
+    retrieveData(interval) {
+      this.$axios.$get(`${process.env.API_URL}/volume/${this.symbol}/${interval}`).then(res => {
+        this.chart0[0].values = res['volumes']
+        this.labels0 = res['dates']
+      })
     }
   }
 }
