@@ -77,12 +77,24 @@ async def read_symbols(db):
     return res
 
 
+async def read_market_short_info(db, index):
+    res = await db['info'].aggregate([{'$match': {
+        'market_index': {'$in': [index]}}},
+        {'$sort': {'symbol': 1}},
+        {'$project': {'_id': '$symbol',
+                      'isin': '$isin',
+                      'long_name': '$long_name'}}
+    ]).to_list(length=10000)
+
+    return res
+
+
 async def read_short_info(db):
     res = await db['info'].aggregate([{'$sort': {'symbol': 1}},
                                       {'$project': {'_id': '$symbol',
                                                     'isin': '$isin',
                                                     'long_name': '$long_name'}}
-                                      ]).to_list(length=100000)
+                                      ]).to_list(length=10000)
 
     return res
 
@@ -201,7 +213,11 @@ async def read_volume_interval(db, symbol, interval):
         low.append(round(r['low'], 2))
         open.append(round(r['open'], 2))
         close.append(round(r['close'], 2))
-        volumes.append(int(r['volume']))
+
+        if not is_nan(r['volume']):
+            volumes.append(int(r['volume']))
+        else:
+            volumes.append(0)
 
     return {'volumes': volumes, 'dates': dates, 'high': high,
             'low': low, 'open': open, 'close': close}
@@ -244,9 +260,16 @@ async def list_results(query):
     return {'results': [r for r in results]}
 
 
-@ app.get('/infos/short')
-async def list_all_short_infos():
+@ app.get('/symbols/all')
+async def list_all_symbols():
     values = await read_short_info(db)
+
+    return {'values': [v for v in values]}
+
+
+@ app.get('/symbols/market/{index}')
+async def list_market_symbols(index):
+    values = await read_market_short_info(db, index)
 
     return {'values': [v for v in values]}
 

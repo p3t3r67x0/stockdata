@@ -30,7 +30,7 @@ export default {
     }
   },
   created() {
-    this.$axios.$get(`${process.env.API_URL}/symbols/all`).then(res => {
+    this.$axios.$get(`${process.env.API_URL}/symbols/market/dax30`).then(res => {
       this.infos = res['values']
     })
   },

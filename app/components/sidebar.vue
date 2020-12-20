@@ -6,78 +6,49 @@
     </div>
 
     <ul :class="[showNav ? 'block z-50' : 'hidden']" class="sm:block sm:mt-8">
-      <li @click="toggleNav" :class="[comparePageName('dashboard') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('dax30') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/dax30">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">DAX 30</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('mdax') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/mdax">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">M DAX</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('sdax') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/sdax">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">S DAX</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('tecdax') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/tecdax">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">TecDAX</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('djia') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/djia">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">Dow Jones</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/sandp500">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">S&amp;P 500</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('symbols') ? activeClass : inactiveClass]" class="text-white">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/symbols">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Symbols</span>
+          <span class="col-span-5">Market</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('organization') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'columns']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('poll') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none  sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'poll']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('templates') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'mail-bulk']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('calendar') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'calendar-week']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('language') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'font']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('settings') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 sm:focus:outline-none mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'user-cog']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('users') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'users']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('boats') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'ship']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('theme') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'paint-brush']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" :class="[comparePageName('event') ? activeClass : inactiveClass]" class="text-white">
-        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/">
-          <fa :icon="['fas', 'sticky-note']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </nuxt-link>
-      </li>
-      <li @click="toggleNav" class="sm:hidden text-white border-gray-900 text-white hover:bg-gray-600 hover:bg-opacity-25 hover:text-gray-100">
-        <a class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6">
-          <fa :icon="['fas', 'sign-out-alt']" class="col-span-1 mt-1" />
-          <span class="col-span-5">Menu entry</span>
-        </a>
-      </li>
+
     </ul>
   </div>
 </div>
