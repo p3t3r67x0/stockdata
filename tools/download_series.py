@@ -34,12 +34,10 @@ def download_dataset(symbol, start, end):
 
 
 def query_forex(db, timestamp):
-    print(timestamp)
-
     gmt = timestamp.replace(tzinfo=ZoneInfo('GMT'))
 
     res = db['forex'].find_one({'timestamp': gmt})
-    print(res)
+
     return res
 
 
@@ -47,7 +45,7 @@ def insert_dataframes(db, d, s):
     a = read_info(db, s)
 
     for i in d.iterrows():
-        if sys.argv[1] == 'data':
+        if sys.argv[1] == 'data' and a is not None:
             if 'currency' in a and a['currency'] != 'EUR':
                 forex = query_forex(db, i[0])
 

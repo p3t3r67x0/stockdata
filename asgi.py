@@ -27,6 +27,15 @@ def is_nan(v):
     return math.isnan(v)
 
 
+def percentage(current, previous):
+    if current == previous:
+        return 100.0
+    try:
+        return (abs(current - previous) / previous) * 100.0
+    except ZeroDivisionError:
+        return 0.0
+
+
 def connect_mongodb():
     mongo_uri = 'mongodb://localhost:27017'
     client = motor.motor_asyncio.AsyncIOMotorClient(mongo_uri)
@@ -56,12 +65,11 @@ async def read_average(db, symbol, field, days):
 
     end = now - timedelta(days=days)
 
-    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
-                                                  'timestamp': {'$lt': now,
-                                                                '$gte': end}}},
-                                      {'$group': {'_id': '$symbol', 'average':
-                                                  {'$avg': f'${field}'}}},
-                                      {'$limit': 1}]).to_list(length=1)
+    res = await db['data'].aggregate([
+        {'$match': {'symbol': symbol, 'timestamp': {'$lt': now, '$gte': end}}},
+        {'$group': {'_id': '$symbol', 'average':
+                    {'$avg': f'${field}'}}},
+        {'$limit': 1}]).to_list(length=1)
 
     if res and res[0]['average'] is not None and not is_nan(res[0]['average']):
         data['value'] = str(round(res[0]['average'], 2))
@@ -78,11 +86,10 @@ async def read_symbols(db):
 
 
 async def read_market_short_info(db, index):
-    res = await db['info'].aggregate([{'$match': {
-        'market_index': {'$in': [index]}}},
+    res = await db['info'].aggregate([
+        {'$match': {'market_index': {'$in': [index]}}},
         {'$sort': {'symbol': 1}},
-        {'$project': {'_id': '$symbol',
-                      'isin': '$isin',
+        {'$project': {'_id': '$symbol', 'isin': '$isin',
                       'long_name': '$long_name'}}
     ]).to_list(length=10000)
 
@@ -90,11 +97,11 @@ async def read_market_short_info(db, index):
 
 
 async def read_short_info(db):
-    res = await db['info'].aggregate([{'$sort': {'symbol': 1}},
-                                      {'$project': {'_id': '$symbol',
-                                                    'isin': '$isin',
-                                                    'long_name': '$long_name'}}
-                                      ]).to_list(length=10000)
+    res = await db['info'].aggregate([
+        {'$sort': {'symbol': 1}},
+        {'$project': {'_id': '$symbol', 'isin': '$isin',
+                      'long_name': '$long_name'}}
+    ]).to_list(length=10000)
 
     return res
 
@@ -106,65 +113,79 @@ async def read_info(db, symbol):
 
 
 async def lookup_query(db, q):
-    res = await db['info'].aggregate([{'$match': {'$text': {'$search': q}}},
-                                      {'$project': {'_id': 0, 'symbol': 1,
-                                                    'isin': 1, 'long_name': 1}
-                                       }, {'$limit': 12}
-                                      ]).to_list(length=100000)
+    res = await db['info'].aggregate([
+        {'$match': {'$text': {'$search': q}}},
+        {'$project': {'_id': 0, 'symbol': 1, 'isin': 1, 'long_name': 1}},
+        {'$limit': 12}
+    ]).to_list(length=10000)
 
     return res
 
 
 async def read_volume_monthly_interval(db, symbol, start, end):
-    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
-                                                  'timestamp': {'$lt': start,
-                                                                '$gte': end}}},
-                                      {'$group': {'_id':
-                                                  {'$dayOfYear': '$timestamp'},
-                                                  'high': {
-                                                      '$last': '$high_eur'},
-                                                  'low': {
-                                                      '$last': '$low_eur'},
-                                                  'open': {
-                                                      '$last': '$open_eur'},
-                                                  'close': {
-                                                      '$last': '$close_eur'},
-                                                  'volume': {'$sum': '$volume'}
-                                                  }},
-                                      {'$sort': {'_id': 1}},
-                                      ]).to_list(length=100000)
+    res = await db['data'].aggregate([
+        {'$match': {'symbol': symbol, 'timestamp': {
+            '$lt': start, '$gte': end}}},
+        {'$group': {'_id': {'$dayOfYear': '$timestamp'},
+                    'high': {'$max': '$high_eur'},
+                    'low': {'$min': '$low_eur'},
+                    'open': {'$first': '$open_eur'},
+                    'close': {'$last': '$close_eur'},
+                    'volume': {'$sum': '$volume'}}},
+        {'$sort': {'_id': 1}},
+    ]).to_list(length=10000)
+
+    return res
+
+
+async def read_current_and_last_interval(db, index, start, end):
+    res = await db['info'].aggregate([
+        {'$match': {'market_index': index}},
+        {'$project': {'_id': '$symbol'}},
+        {'$lookup': {'from': 'data', 'localField': '_id',
+                     'foreignField': 'symbol', 'as': 'data'}},
+        {'$unwind': '$data'},
+        {'$match': {'data.timestamp': {
+            '$lt': start, '$gte': end}}},
+        {'$group': {
+            '_id': {'symbol': '$data.symbol',
+                    'year': {'$year': '$data.timestamp'},
+                    'mth': {'$month': '$data.timestamp'},
+                    'dom': {
+                        '$subtract': [
+                            {'$dayOfMonth': '$data.timestamp'}, {
+                                '$mod': [{
+                                    '$dayOfMonth': '$data.timestamp'}, 1]}
+                        ]}},
+            'high': {'$max': '$data.high_eur'},
+            'low': {'$min': '$data.low_eur'},
+            'open': {'$first': '$data.open_eur'},
+            'close': {'$last': '$data.close_eur'}}},
+        {'$sort': {'year': 1, '_id.mth': 1, '_id.dom': 1}},
+        {'$limit': 2000}
+    ]).to_list(length=2000)
 
     return res
 
 
 async def read_volume_daily_interval(db, symbol, start, end):
-    res = await db['data'].aggregate([{'$match': {'symbol': symbol,
-                                                  'timestamp': {'$lt': start,
-                                                                '$gte': end}}},
-                                      {'$group':
-                                          {'_id': {'year':
-                                                   {'$year': '$timestamp'},
-                                                   'doy': {
-                                                       '$dayOfYear': '$timestamp'},
-                                                   'hrs': {'$hour': '$timestamp'},
-                                                   'min': {'$subtract': [
-                                                       {'$minute': '$timestamp'},
-                                                       {'$mod': [
-                                                           {'$minute': '$timestamp'},
-                                                           15]}]}},
-                                           'high': {
-                                              '$last': '$high_eur'},
-                                           'low': {
-                                              '$last': '$low_eur'},
-                                           'open': {
-                                              '$last': '$open_eur'},
-                                           'close': {
-                                              '$last': '$close_eur'},
-                                           'volume': {'$sum': '$volume'}
-                                           }},
-                                      {'$sort': {'year': 1, '_id.doy': 1,
-                                                 '_id.hrs': 1, '_id.min': 1}}
-                                      ]).to_list(length=100)
+    res = await db['data'].aggregate([
+        {'$match': {'symbol': symbol, 'timestamp': {
+            '$lt': start, '$gte': end}}},
+        {'$group':
+         {'_id': {'year': {'$year': '$timestamp'},
+                  'doy': {'$dayOfYear': '$timestamp'},
+                  'hrs': {'$hour': '$timestamp'},
+                  'min': {'$subtract': [{'$minute': '$timestamp'}, {'$mod': [
+                          {'$minute': '$timestamp'}, 15]}]}},
+          'high': {'$max': '$high_eur'},
+          'low': {'$min': '$low_eur'},
+          'open': {'$first': '$open_eur'},
+          'close': {'$last': '$close_eur'},
+          'volume': {'$sum': '$volume'}
+          }},
+        {'$sort': {'year': 1, '_id.doy': 1, '_id.hrs': 1, '_id.min': 1}}
+    ]).to_list(length=100)
 
     return res
 
@@ -223,6 +244,79 @@ async def read_volume_interval(db, symbol, interval):
             'low': low, 'open': open, 'close': close}
 
 
+async def read_percentage_differences(db, index):
+    data = []
+
+    dt = datetime.combine(date.today(), datetime.max.time())
+    tz_name = dt.astimezone().tzname()
+    tz = pytz.timezone(tz_name)
+
+    now1 = tz.localize(dt).replace(microsecond=0)
+    now2 = tz.localize(dt).replace(microsecond=0)
+
+    weekday1 = now1.weekday()
+    weekday2 = now2.weekday()
+
+    if weekday1 == 5:
+        now1 = now1 - timedelta(days=1)
+    elif weekday1 == 6:
+        now1 = now1 - timedelta(days=2)
+
+    end1 = now1 - timedelta(days=1)
+
+    if weekday2 == 5:
+        now2 = now2 - timedelta(days=1)
+    elif weekday2 == 6:
+        now2 = now2 - timedelta(days=2)
+
+    now2 = now2 - timedelta(days=1)
+    end2 = now2 - timedelta(days=1)
+
+    res1 = await read_current_and_last_interval(db, index, now1, end1)
+    res2 = await read_current_and_last_interval(db, index, now2, end2)
+
+    for i in res1:
+        dt = datetime(i['_id']['year'], i['_id']['mth'], i['_id']['dom'])
+        d = str(dt.date())
+
+        object = {}
+        object[i['_id']['symbol']] = {}
+        object[i['_id']['symbol']][d] = {}
+
+        object[i['_id']['symbol']][d]['high'] = round(i['high'], 2)
+        object[i['_id']['symbol']][d]['low'] = round(i['low'], 2)
+        object[i['_id']['symbol']][d]['open'] = round(i['open'], 2)
+        object[i['_id']['symbol']][d]['close'] = round(i['close'], 2)
+
+        data.append(object)
+
+    for i in res2:
+        dt = datetime(i['_id']['year'], i['_id']['mth'], i['_id']['dom'])
+        d = str(dt.date())
+
+        for j in data:
+            if i['_id']['symbol'] in j and j[i['_id']['symbol']]:
+                j[i['_id']['symbol']][d] = {}
+
+                j[i['_id']['symbol']][d]['high'] = round(i['high'], 2)
+                j[i['_id']['symbol']][d]['low'] = round(i['low'], 2)
+                j[i['_id']['symbol']][d]['open'] = round(i['open'], 2)
+                j[i['_id']['symbol']][d]['close'] = round(i['close'], 2)
+
+    for d in data:
+        for k in d.keys():
+            a = []
+
+            for m in d[k].keys():
+                a.append(m)
+
+            p = percentage(d[k][a[0]]['high'], d[k][a[1]]['high'])
+
+            d[k][a[0]]['percent'] = round(p, 2)
+
+    return data
+
+
 async def retrieve_info(db, symbol):
     res = await db['info'].find({'symbol': symbol}).to_list(length=100000)
 
@@ -253,28 +347,35 @@ app.add_middleware(
 )
 
 
-@ app.get('/query/{query}')
+@app.get('/query/{query}')
 async def list_results(query):
     results = await lookup_query(db, query)
 
     return {'results': [r for r in results]}
 
 
-@ app.get('/symbols/all')
+@app.get('/symbols/all')
 async def list_all_symbols():
     values = await read_short_info(db)
 
     return {'values': [v for v in values]}
 
 
-@ app.get('/symbols/market/{index}')
+@app.get('/percentages/market/{index}')
+async def list_market_percentages(index):
+    values = await read_percentage_differences(db, index)
+
+    return {'values': values}
+
+
+@app.get('/symbols/market/{index}')
 async def list_market_symbols(index):
     values = await read_market_short_info(db, index)
 
     return {'values': [v for v in values]}
 
 
-@ app.get('/volume/{symbol}/{interval}')
+@app.get('/volume/{symbol}/{interval}')
 async def volume_interval(symbol, interval):
     symbol = symbol.upper()
 
@@ -283,7 +384,7 @@ async def volume_interval(symbol, interval):
     return res
 
 
-@ app.get('/average/{symbol}')
+@app.get('/average/{symbol}')
 async def average_values(symbol):
     object = {}
 
