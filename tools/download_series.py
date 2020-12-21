@@ -123,12 +123,12 @@ db[sys.argv[1]].create_index(
     [('symbol', ASCENDING), ('timestamp', ASCENDING)], unique=True
 )
 
-if len(sys.argv) == 4:
+if len(sys.argv) == 4 and sys.argv[1] == 'data':
     # download_series.py data dax30.csv full
     t = load_tickers(sys.argv[2])
-elif len(sys.argv) == 5:
-    # download_series.py forex dax30.csv short USDEUR=X
-    t = [sys.argv[4]]
+elif len(sys.argv) == 4 and sys.argv[1] == 'forex':
+    # download_series.py forex USDEUR=X short
+    t = [sys.argv[2]]
 
 for i in t:
     print(f'Going to download dataframes for {i.upper().strip()}')
