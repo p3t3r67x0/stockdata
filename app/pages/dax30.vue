@@ -1,21 +1,22 @@
 <template>
 <div>
-  <table v-if="infos.length > 0" class="table-fixed w-full">
+  <table v-if="values.length > 0" class="table-fixed w-full">
     <tr class="bg-gray-700 text-white text-md">
       <th colspan="1" class="text-left p-3">Symbol</th>
       <th colspan="2" class="text-left p-3">Company</th>
       <th colspan="1" class="text-left p-3">ISIN</th>
     </tr>
-    <tr v-for="info in infos" class="even:bg-gray-400 odd:bg-gray-200">
+    <tr v-for="value in values" class="even:bg-gray-400 odd:bg-gray-200">
       <td colspan="1" class="p-3">
-        <nuxt-link :to="makeLink(info['_id'])" class="text-xl sm:text-2xl block"><span class="bg-red-500 font-sans text-white px-1">{{ info['_id'] }}</span></nuxt-link>
+        {{ value }}
+        <nuxt-link :to="makeLink(value['_id'])" class="text-xl sm:text-2xl block"><span class="bg-red-500 font-sans text-white px-1">{{ value['_id'] }}</span></nuxt-link>
       </td>
       <td colspan="2" class="p-3">
-        <nuxt-link :to="makeLink(info['_id'])" class="text-xl block">{{ info['long_name'] }}</nuxt-link>
+        <nuxt-link :to="makeLink(value['_id'])" class="text-xl block">{{ value['long_name'] }}</nuxt-link>
       </td>
       </td>
       <td colspan="1" class="p-3">
-        <nuxt-link :to="makeLink(info['_id'])" class="text-xl block">{{ info['isin'] }}</nuxt-link>
+        <nuxt-link :to="makeLink(value['_id'])" class="text-xl block">{{ value['isin'] }}</nuxt-link>
       </td>
     </tr>
   </table>
@@ -26,12 +27,12 @@
 export default {
   data() {
     return {
-      infos: []
+      values: []
     }
   },
   created() {
-    this.$axios.$get(`${process.env.API_URL}/symbols/market/dax30`).then(res => {
-      this.infos = res['values']
+    this.$axios.$get(`${process.env.API_URL}/percentages/market/dax30`).then(res => {
+      this.values = res
     })
   },
   methods: {

@@ -29,7 +29,7 @@ def is_nan(v):
 
 def percentage(current, previous):
     if current == previous:
-        return 100.0
+        return 0.0
     try:
         return (abs(current - previous) / previous) * 100.0
     except ZeroDivisionError:
@@ -230,12 +230,27 @@ async def read_volume_interval(db, symbol, interval):
             dt = dtc + timedelta(days=r['_id'] - 1)
             dates.append(f'{dt.day}.{dt.month}.')
 
-        high.append(round(r['high'], 2))
-        low.append(round(r['low'], 2))
-        open.append(round(r['open'], 2))
-        close.append(round(r['close'], 2))
+        if r['high'] is not None:
+            high.append(round(r['high'], 2))
+        else:
+            high.append(0)
 
-        if not is_nan(r['volume']):
+        if r['low'] is not None:
+            low.append(round(r['low'], 2))
+        else:
+            low.append(0)
+
+        if r['open'] is not None:
+            open.append(round(r['open'], 2))
+        else:
+            open.append(0)
+
+        if r['close'] is not None:
+            close.append(round(r['close'], 2))
+        else:
+            close.append(0)
+
+        if r['volume'] is not None and not is_nan(r['volume']):
             volumes.append(int(r['volume']))
         else:
             volumes.append(0)
@@ -247,12 +262,15 @@ async def read_volume_interval(db, symbol, interval):
 async def read_percentage_differences(db, index):
     data = []
 
-    dt = datetime.combine(date.today(), datetime.max.time())
-    tz_name = dt.astimezone().tzname()
-    tz = pytz.timezone(tz_name)
+    propsed = datetime.utcnow()
+    midnight = datetime.combine(date.today(), datetime.min.time())
+    opening = datetime.combine(date.today(), time(8, 30, 0))
 
-    now1 = tz.localize(dt).replace(microsecond=0)
-    now2 = tz.localize(dt).replace(microsecond=0)
+    if propsed >= midnight and propsed <= opening:
+        propsed = propsed - timedelta(days=1)
+
+    now1 = propsed.replace(microsecond=0)
+    now2 = propsed.replace(microsecond=0)
 
     weekday1 = now1.weekday()
     weekday2 = now2.weekday()
@@ -279,15 +297,17 @@ async def read_percentage_differences(db, index):
         dt = datetime(i['_id']['year'], i['_id']['mth'], i['_id']['dom'])
         d = str(dt.date())
 
-        object = {}
-        object[i['_id']['symbol']] = {}
-        object[i['_id']['symbol']][d] = {}
+        object = {'symbol': i['_id']['symbol']}
+        object['data'] = []
 
-        object[i['_id']['symbol']][d]['high'] = round(i['high'], 2)
-        object[i['_id']['symbol']][d]['low'] = round(i['low'], 2)
-        object[i['_id']['symbol']][d]['open'] = round(i['open'], 2)
-        object[i['_id']['symbol']][d]['close'] = round(i['close'], 2)
+        obj = {'date': d}
 
+        obj['high'] = round(i['high'], 2)
+        obj['low'] = round(i['low'], 2)
+        obj['open'] = round(i['open'], 2)
+        obj['close'] = round(i['close'], 2)
+
+        object['data'].append(obj)
         data.append(object)
 
     for i in res2:
@@ -295,14 +315,17 @@ async def read_percentage_differences(db, index):
         d = str(dt.date())
 
         for j in data:
-            if i['_id']['symbol'] in j and j[i['_id']['symbol']]:
-                j[i['_id']['symbol']][d] = {}
+            if 'symbol' in j and j['symbol'] == i['_id']['symbol']:
+                obj = {'date': d}
 
-                j[i['_id']['symbol']][d]['high'] = round(i['high'], 2)
-                j[i['_id']['symbol']][d]['low'] = round(i['low'], 2)
-                j[i['_id']['symbol']][d]['open'] = round(i['open'], 2)
-                j[i['_id']['symbol']][d]['close'] = round(i['close'], 2)
+                obj['high'] = round(i['high'], 2)
+                obj['low'] = round(i['low'], 2)
+                obj['open'] = round(i['open'], 2)
+                obj['close'] = round(i['close'], 2)
 
+                object['data'].append(obj)
+
+    '''
     for d in data:
         for k in d.keys():
             a = []
@@ -313,6 +336,7 @@ async def read_percentage_differences(db, index):
             p = percentage(d[k][a[0]]['high'], d[k][a[1]]['high'])
 
             d[k][a[0]]['percent'] = round(p, 2)
+    '''
 
     return data
 
@@ -365,7 +389,7 @@ async def list_all_symbols():
 async def list_market_percentages(index):
     values = await read_percentage_differences(db, index)
 
-    return {'values': values}
+    return values
 
 
 @app.get('/symbols/market/{index}')
