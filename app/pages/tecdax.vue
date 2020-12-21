@@ -1,5 +1,8 @@
 <template>
 <div>
+  <h1 class="text-teal-900 text-4xl font-bold font-sans mb-6">
+    <span class="bg-blue-500 text-white px-1">TecDAX</span>
+  </h1>
   <table v-if="infos.length > 0" class="table-fixed w-full">
     <tr class="bg-gray-700 text-white text-md">
       <th colspan="1" class="text-left p-3">Symbol</th>
