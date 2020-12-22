@@ -333,6 +333,8 @@ async def read_percentage_differences(db, index):
         else:
             d['percent'] = round(percent, 2)
 
+    data.sort(key=lambda x: x['percent'], reverse=True)
+
     return data
 
 
