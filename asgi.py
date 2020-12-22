@@ -262,15 +262,15 @@ async def read_volume_interval(db, symbol, interval):
 async def read_percentage_differences(db, index):
     data = []
 
-    propsed = datetime.utcnow()
+    current = datetime.utcnow()
     midnight = datetime.combine(date.today(), datetime.min.time())
     opening = datetime.combine(date.today(), time(8, 30, 0))
 
-    if propsed >= midnight and propsed <= opening:
-        propsed = propsed - timedelta(days=1)
+    if current >= midnight and current <= opening:
+        current = current - timedelta(days=1)
 
-    now1 = propsed.replace(microsecond=0)
-    now2 = propsed.replace(microsecond=0)
+    now1 = current
+    now2 = current - timedelta(days=1)
 
     weekday1 = now1.weekday()
     weekday2 = now2.weekday()
@@ -280,18 +280,24 @@ async def read_percentage_differences(db, index):
     elif weekday1 == 6:
         now1 = now1 - timedelta(days=2)
 
-    end1 = now1 - timedelta(days=1)
-
     if weekday2 == 5:
         now2 = now2 - timedelta(days=1)
     elif weekday2 == 6:
         now2 = now2 - timedelta(days=2)
 
-    now2 = now2 - timedelta(days=1)
+    end1 = now1 - timedelta(days=1)
     end2 = now2 - timedelta(days=1)
 
-    res1 = await read_current_and_last_interval(db, index, now1, end1)
-    res2 = await read_current_and_last_interval(db, index, now2, end2)
+    dtc_now1 = datetime.combine(now1.date(), datetime.max.time())
+    dtc_now2 = datetime.combine(now2.date(), datetime.max.time())
+    dtc_end1 = datetime.combine(end1.date(), datetime.max.time())
+    dtc_end2 = datetime.combine(end2.date(), datetime.max.time())
+
+    res1 = await read_current_and_last_interval(db, index, dtc_now1, dtc_end1)
+    res2 = await read_current_and_last_interval(db, index, dtc_now2, dtc_end2)
+
+    if not res1 or not res2:
+        return []
 
     for i in res1:
         dt = datetime(i['_id']['year'], i['_id']['mth'], i['_id']['dom'])
@@ -302,9 +308,6 @@ async def read_percentage_differences(db, index):
 
         obj = {'date': d}
 
-        obj['high'] = round(i['high'], 2)
-        obj['low'] = round(i['low'], 2)
-        obj['open'] = round(i['open'], 2)
         obj['close'] = round(i['close'], 2)
 
         object['data'].append(obj)
@@ -318,25 +321,13 @@ async def read_percentage_differences(db, index):
             if 'symbol' in j and j['symbol'] == i['_id']['symbol']:
                 obj = {'date': d}
 
-                obj['high'] = round(i['high'], 2)
-                obj['low'] = round(i['low'], 2)
-                obj['open'] = round(i['open'], 2)
                 obj['close'] = round(i['close'], 2)
 
-                object['data'].append(obj)
+                j['data'].append(obj)
 
-    '''
     for d in data:
-        for k in d.keys():
-            a = []
-
-            for m in d[k].keys():
-                a.append(m)
-
-            p = percentage(d[k][a[0]]['high'], d[k][a[1]]['high'])
-
-            d[k][a[0]]['percent'] = round(p, 2)
-    '''
+        percent = percentage(d['data'][0]['close'], d['data'][1]['close'])
+        d['percent'] = round(percent, 2)
 
     return data
 
