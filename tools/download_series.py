@@ -6,7 +6,7 @@ import yfinance as yf
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 from datetime import date, datetime, timedelta
-from backports.zoneinfo import ZoneInfo
+from pytz import timezone
 
 
 def connect_mongodb():
@@ -33,44 +33,88 @@ def download_dataset(symbol, start, end):
     return d
 
 
-def query_forex(db, timestamp):
-    gmt = timestamp.replace(tzinfo=ZoneInfo('GMT'))
+def read_currency_value(db, symbol, timestamp):
+    start = timestamp - timedelta(minutes=10)
+    end = timestamp + timedelta(minutes=10)
 
-    res = db['forex'].find_one({'timestamp': gmt})
+    res = db['forex'].aggregate([{
+        '$match': {'symbol': symbol, 'timestamp': {
+            '$gte': start, '$lte': end}}},
+        {'$project': {'timestamp': 1, 'high': '$high', 'low': '$low',
+                      'open': '$open', 'close': '$close',
+                      'adjust_close': '$adjust_close',
+                      'difference': {'$abs': [
+                          {'$subtract': ["$timestamp", timestamp]}]}}},
+        {'$sort': {'difference': 1}},
+        {'$limit': 1}])
+
+    res = list(res)[0]
 
     return res
+
+
+def multiply_currencies(db, symbol, data):
+    forex = read_currency_value(db, symbol, data[0])
+
+    high = forex['high'] * data[1][1]
+    low = forex['low'] * data[1][2]
+    open = forex['open'] * data[1][0]
+    close = forex['close'] * data[1][3]
+    adjust_close = forex['adjust_close'] * data[1][4]
+
+    return {'high': high, 'low': low, 'open': open,
+            'close': close, 'adjust_close': adjust_close}
 
 
 def insert_dataframes(db, d, s):
     a = read_info(db, s)
 
-    for i in d.iterrows():
-        if sys.argv[1] == 'data' and a is not None:
-            if 'currency' in a and a['currency'] != 'EUR':
-                forex = query_forex(db, i[0])
+    usd = 'USDEUR=X'
+    hkd = 'HKDEUR=X'
 
-                if forex:
-                    high_eur = forex['high'] * i[1][1]
-                    low_eur = forex['low'] * i[1][2]
-                    open_eur = forex['open'] * i[1][0]
-                    close_eur = forex['close'] * i[1][3]
-                    adjust_close_eur = forex['adjust_close'] * i[1][4]
-            else:
+    for i in d.iterrows():
+        if sys.argv[1] == 'data' and a is not None and s != usd and s != hkd:
+            if 'currency' in a and a['currency'] == 'USD':
+                res = multiply_currencies(db, usd, i)
+
+                high_eur = res['high']
+                low_eur = res['low']
+                open_eur = res['open']
+                close_eur = res['close']
+                adjust_close_eur = res['adjust_close']
+
+            elif 'currency' in a and a['currency'] == 'HKD':
+                res = multiply_currencies(db, hkd, i)
+
+                high_eur = res['high']
+                low_eur = res['low']
+                open_eur = res['open']
+                close_eur = res['close']
+                adjust_close_eur = res['adjust_close']
+
+            elif 'currency' in a and a['currency'] == 'EUR':
                 high_eur = i[1][1]
                 low_eur = i[1][2]
                 open_eur = i[1][0]
                 close_eur = i[1][3]
                 adjust_close_eur = i[1][4]
 
+            else:
+                raise Exception
+
             data = {'timestamp': i[0], 'open': i[1][0], 'high': i[1][1],
                     'low': i[1][2], 'close': i[1][3], 'volume': i[1][5],
                     'adjust_close': i[1][4], 'high_eur': high_eur,
                     'close_eur': close_eur, 'open_eur': open_eur, 'symbol': s,
                     'low_eur': low_eur, 'adjust_close_eur': adjust_close_eur}
-        else:
+
+        elif sys.argv[1] == 'forex' and s == usd or s == hkd:
             data = {'timestamp': i[0], 'open': i[1][0], 'high': i[1][1],
                     'low': i[1][2], 'close': i[1][3], 'adjust_close': i[1][4],
                     'symbol': s}
+
+        else:
+            raise Exception
 
         try:
             db[sys.argv[1]].insert_one(data)
@@ -112,7 +156,7 @@ def request_download(db, symbol, flag):
         print()
     elif flag == 'short':
         factor_start = -1
-        factor_end = 6
+        factor_end = 1
 
         handle_datestring(db, symbol, factor_start, factor_end)
 
