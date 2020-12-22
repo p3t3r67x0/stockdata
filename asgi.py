@@ -327,7 +327,11 @@ async def read_percentage_differences(db, index):
 
     for d in data:
         percent = percentage(d['data'][0]['close'], d['data'][1]['close'])
-        d['percent'] = round(percent, 2)
+
+        if d['data'][0]['close'] < d['data'][1]['close']:
+            d['percent'] = round(percent * - percent, 2)
+        else:
+            d['percent'] = round(percent, 2)
 
     return data
 
