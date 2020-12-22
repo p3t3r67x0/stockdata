@@ -1,7 +1,7 @@
 <template>
 <div>
   <h1 class="text-teal-900 text-4xl font-bold font-sans mb-6">
-    <span class="bg-blue-500 text-white px-1">MARKET</span>
+    International markets
   </h1>
   <table v-if="infos.length > 0" class="table-fixed w-full">
     <tr class="bg-gray-700 text-white text-md">
@@ -11,7 +11,9 @@
     </tr>
     <tr v-for="info in infos" class="even:bg-gray-400 odd:bg-gray-200">
       <td colspan="1" class="p-3">
-        <nuxt-link :to="makeLink(info['_id'])" class="text-xl sm:text-2xl block"><span class="bg-red-500 font-sans text-white px-1">{{ info['_id'] }}</span></nuxt-link>
+        <nuxt-link :to="makeLink(info['_id'])" class="text-xl sm:text-2xl block">
+          <span class="bg-blue-500 font-sans text-white px-1">{{ info['_id'] }}</span>
+        </nuxt-link>
       </td>
       <td colspan="2" class="p-3">
         <nuxt-link :to="makeLink(info['_id'])" class="text-xl block">{{ info['long_name'] }}</nuxt-link>
