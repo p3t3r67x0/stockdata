@@ -36,7 +36,7 @@
           <tr>
             <td class="py-1">
               <nuxt-link :to="makeLink(value['symbol'])" class="text-xl block">
-                <span>{{ value['data'][1]['date'] }}</span><br>
+                <span>{{ value['data'][0]['date'] }}</span><br>
               </nuxt-link>
             </td>
             <td class="px-3 py-1">
