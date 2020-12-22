@@ -26,7 +26,7 @@
             </td>
             <td class="px-3 py-1">
               <nuxt-link :to="makeLink(value['symbol'])" class="text-xl block">
-                <span>{{ value['data'][0]['close'] }} EUR</span>
+                <span>{{ value['data'][1]['close'] }} EUR</span>
               </nuxt-link>
             </td>
             <td class="px-3">
