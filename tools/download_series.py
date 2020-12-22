@@ -34,8 +34,9 @@ def download_dataset(symbol, start, end):
 
 
 def read_currency_value(db, symbol, timestamp):
-    start = timestamp - timedelta(minutes=10)
-    end = timestamp + timedelta(minutes=10)
+    ts = timestamp.replace(tzinfo=None)
+    start = ts - timedelta(minutes=10)
+    end = ts + timedelta(minutes=10)
 
     res = db['forex'].aggregate([{
         '$match': {'symbol': symbol, 'timestamp': {
@@ -44,7 +45,7 @@ def read_currency_value(db, symbol, timestamp):
                       'open': '$open', 'close': '$close',
                       'adjust_close': '$adjust_close',
                       'difference': {'$abs': [
-                          {'$subtract': ["$timestamp", timestamp]}]}}},
+                          {'$subtract': ["$timestamp", ts]}]}}},
         {'$sort': {'difference': 1}},
         {'$limit': 1}])
 
