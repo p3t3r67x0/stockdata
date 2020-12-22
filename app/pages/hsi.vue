@@ -1,7 +1,7 @@
 <template>
 <div>
   <h1 class="text-teal-900 text-4xl font-bold font-sans mb-6">
-    MDAX market index
+    HSI market index
   </h1>
   <table v-if="values.length > 0" class="table-fixed w-full">
     <tr class="bg-gray-700 text-white text-md">
@@ -62,7 +62,7 @@ export default {
     }
   },
   created() {
-    this.$axios.$get(`${process.env.API_URL}/percentages/market/mdax`).then(res => {
+    this.$axios.$get(`${process.env.API_URL}/percentages/market/hsi`).then(res => {
       this.values = res
     })
   },

@@ -2,7 +2,7 @@
 <div v-click-outside="hideNav" class="sm:flex sm:min-h-screen h-12 sm:h-auto">
   <div class="fixed w-full top-0 left-0 sm:w-64 overflow-y-auto transition duration-300 transform ease-in overflow-y-auto sm:translate-x-0 sm:static sm:inset-0 z-50 sm:z-0 bg-gray-900">
     <div class="flex justify-center items-center bg-blue-500 sm:border-b-4 sm:border-white h-12 sm:h-16 lg:h-20">
-      <p class="tracking-wide font-sans text-white text-2xl sm:text-3xl px-2 sm:px-4">stocklify.xyz</p>
+      <nuxt-link to="/" class="tracking-wide font-sans text-white text-2xl sm:text-3xl px-2 sm:px-4">stocklify.xyz</nuxt-link>
     </div>
 
     <ul :class="[showNav ? 'block z-50' : 'hidden']" class="sm:block sm:mt-8">
@@ -52,6 +52,12 @@
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/aex25">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">AEX 25</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/hsi">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">HSI</span>
         </nuxt-link>
       </li>
       <li @click="toggleNav" :class="[comparePageName('symbols') ? activeClass : inactiveClass]" class="text-white">
