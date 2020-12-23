@@ -34,7 +34,8 @@ def download_dataset(symbol, start, end):
 
 
 def read_currency_value(db, symbol, timestamp):
-    ts = timestamp.replace(tzinfo=None)
+    tsz = timestamp.astimezone(timezone('Europe/London'))
+    ts = tsz.replace(tzinfo=None)
     start = ts - timedelta(minutes=10)
     end = ts + timedelta(minutes=10)
 

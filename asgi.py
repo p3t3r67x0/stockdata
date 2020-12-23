@@ -12,6 +12,7 @@ from pymongo import ASCENDING, TEXT
 from datetime import time, date, datetime, timedelta
 
 from pydantic import BaseSettings
+from pytz import timezone
 
 
 class Settings(BaseSettings):
@@ -262,7 +263,9 @@ async def read_volume_interval(db, symbol, interval):
 async def read_percentage_differences(db, index):
     data = []
 
-    current = datetime.utcnow()
+    now = datetime.now()
+    tsz = now.astimezone(timezone('Europe/Berlin'))
+    current = tsz.replace(tzinfo=None)
     midnight = datetime.combine(date.today(), datetime.min.time())
     opening = datetime.combine(date.today(), time(8, 30, 0))
 
