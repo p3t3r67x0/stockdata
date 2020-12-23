@@ -5,15 +5,16 @@
   </h1>
   <table v-if="values.length > 0" class="table-fixed w-full">
     <tr class="bg-gray-700 text-white text-md">
-      <th colspan="1" class="text-left p-3">Ticker</th>
+      <th colspan="2" class="text-left p-3">Ticker</th>
       <th colspan="1" class="text-left p-3">Last & Current date</th>
       <th colspan="1" class="text-left p-3">Last & Current price</th>
       <th colspan="1" class="text-left p-3">Percentage</th>
     </tr>
     <tr v-for="value in values" :class="[value['percent'] >= 0 ? 'even:bg-green-150 odd:bg-green-200' : 'even:bg-red-200 odd:bg-red-150']">
-      <td colspan="1" class="p-3">
+      <td colspan="2" class="p-3">
         <nuxt-link :to="makeLink(value['symbol'])" class="text-xl sm:text-2xl block">
           <span class="bg-blue-500 font-sans text-white px-1">{{ value['symbol'] }}</span>
+          <p class="text-gray-900 text-xl">{{ value['long_name'] }}</p>
         </nuxt-link>
       </td>
       <td colspan="3" class="p-3">
