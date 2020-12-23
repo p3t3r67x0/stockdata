@@ -36,8 +36,8 @@ def download_dataset(symbol, start, end):
 def read_currency_value(db, symbol, timestamp):
     tsz = timestamp.astimezone(timezone('Europe/London'))
     ts = tsz.replace(tzinfo=None)
-    start = ts - timedelta(minutes=10)
-    end = ts + timedelta(minutes=10)
+    start = ts - timedelta(hours=2)
+    end = ts + timedelta(hours=2)
 
     res = db['forex'].aggregate([{
         '$match': {'symbol': symbol, 'timestamp': {
@@ -73,9 +73,10 @@ def insert_dataframes(db, d, s):
 
     usd = 'USDEUR=X'
     hkd = 'HKDEUR=X'
+    inr = 'INREUR=X'
 
     for i in d.iterrows():
-        if sys.argv[1] == 'data' and a is not None and s != usd and s != hkd:
+        if sys.argv[1] == 'data' and s not in [inr, hkd, usd]:
             if 'currency' in a and a['currency'] == 'USD':
                 res = multiply_currencies(db, usd, i)
 
@@ -87,6 +88,15 @@ def insert_dataframes(db, d, s):
 
             elif 'currency' in a and a['currency'] == 'HKD':
                 res = multiply_currencies(db, hkd, i)
+
+                high_eur = res['high']
+                low_eur = res['low']
+                open_eur = res['open']
+                close_eur = res['close']
+                adjust_close_eur = res['adjust_close']
+
+            elif 'currency' in a and a['currency'] == 'INR':
+                res = multiply_currencies(db, inr, i)
 
                 high_eur = res['high']
                 low_eur = res['low']
@@ -110,7 +120,7 @@ def insert_dataframes(db, d, s):
                     'close_eur': close_eur, 'open_eur': open_eur, 'symbol': s,
                     'low_eur': low_eur, 'adjust_close_eur': adjust_close_eur}
 
-        elif sys.argv[1] == 'forex' and s == usd or s == hkd:
+        elif sys.argv[1] == 'forex' and s in [inr, hkd, usd]:
             data = {'timestamp': i[0], 'open': i[1][0], 'high': i[1][1],
                     'low': i[1][2], 'close': i[1][3], 'adjust_close': i[1][4],
                     'symbol': s}
