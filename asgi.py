@@ -139,17 +139,18 @@ async def read_volume_monthly_interval(db, symbol, start, end):
     return res
 
 
-async def read_current_and_last_interval(db, index, start, end):
+async def read_market_index(db, index, start, end):
     res = await db['info'].aggregate([
         {'$match': {'market_index': index}},
-        {'$project': {'_id': '$symbol'}},
-        {'$lookup': {'from': 'data', 'localField': '_id',
+        {'$lookup': {'from': 'data', 'localField': 'symbol',
                      'foreignField': 'symbol', 'as': 'data'}},
         {'$unwind': '$data'},
-        {'$match': {'data.timestamp': {
-            '$lt': start, '$gte': end}}},
+        {'$project': {
+            'symbol': '$symbol', 'long_name': '$long_name', 'data': '$data'}},
+        {'$match': {'data.timestamp': {'$lt': start, '$gte': end}}},
         {'$group': {
-            '_id': {'symbol': '$data.symbol',
+            '_id': {'symbol': '$symbol',
+                    'long_name': '$long_name',
                     'year': {'$year': '$data.timestamp'},
                     'mth': {'$month': '$data.timestamp'},
                     'dom': {
@@ -264,7 +265,7 @@ async def read_percentage_differences(db, index):
     data = []
 
     now = datetime.now()
-    tsz = now.astimezone(timezone('Europe/Berlin'))
+    tsz = now.astimezone(timezone('Europe/London'))
     current = tsz.replace(tzinfo=None)
     midnight = datetime.combine(date.today(), datetime.min.time())
     opening = datetime.combine(date.today(), time(8, 30, 0))
@@ -296,8 +297,8 @@ async def read_percentage_differences(db, index):
     dtc_end1 = datetime.combine(end1.date(), datetime.max.time())
     dtc_end2 = datetime.combine(end2.date(), datetime.max.time())
 
-    res1 = await read_current_and_last_interval(db, index, dtc_now1, dtc_end1)
-    res2 = await read_current_and_last_interval(db, index, dtc_now2, dtc_end2)
+    res1 = await read_market_index(db, index, dtc_now1, dtc_end1)
+    res2 = await read_market_index(db, index, dtc_now2, dtc_end2)
 
     if not res1 or not res2:
         return []
@@ -307,6 +308,7 @@ async def read_percentage_differences(db, index):
         d = str(dt.date())
 
         object = {'symbol': i['_id']['symbol']}
+        object['long_name'] = i['_id']['long_name']
         object['data'] = []
 
         obj = {'date': d}
