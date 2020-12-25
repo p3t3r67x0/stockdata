@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import math
-import pytz
 import motor.motor_asyncio
 import yfinance as yf
 
@@ -51,31 +50,48 @@ def download_dataset(symbol, start, end):
     return d
 
 
+def get_date_range():
+    now = datetime.now()
+    tsz = now.astimezone(timezone('Europe/London'))
+    current = tsz.replace(tzinfo=None)
+    midnight = datetime.combine(date.today(), datetime.min.time())
+    opening = datetime.combine(date.today(), time(8, 30, 0))
+
+    if current >= midnight and current <= opening:
+        current = current - timedelta(days=1)
+
+    weekday1 = current.weekday()
+
+    if weekday1 == 5:
+        current = current - timedelta(days=1)
+    elif weekday1 == 6:
+        current = current - timedelta(days=2)
+
+    end = current - timedelta(days=1)
+
+    start = datetime.combine(current.date(), datetime.max.time())
+    end = datetime.combine(end.date(), datetime.max.time())
+
+    return {'start': start.replace(microsecond=0),
+            'end': end.replace(microsecond=0)}
+
+
 async def read_average(db, symbol, field, days):
     data = {}
-    dt = datetime.combine(date.today(), datetime.max.time())
-    tz_name = dt.astimezone().tzname()
-    tz = pytz.timezone(tz_name)
-    now = tz.localize(dt)
-    weekday = now.weekday()
 
-    if weekday == 5:
-        now = now - timedelta(days=1)
-    elif weekday == 6:
-        now = now - timedelta(days=2)
-
-    end = now - timedelta(days=days)
+    dt = get_date_range()
 
     res = await db['data'].aggregate([
-        {'$match': {'symbol': symbol, 'timestamp': {'$lt': now, '$gte': end}}},
+        {'$match': {'symbol': symbol, 'timestamp': {
+            '$lt': dt['start'], '$gte': dt['end']}}},
         {'$group': {'_id': '$symbol', 'average':
                     {'$avg': f'${field}'}}},
         {'$limit': 1}]).to_list(length=1)
 
     if res and res[0]['average'] is not None and not is_nan(res[0]['average']):
         data['value'] = str(round(res[0]['average'], 2))
-        data['start'] = now.strftime('%Y-%m-%d')
-        data['end'] = end.strftime('%Y-%m-%d')
+        data['start'] = dt['start'].strftime('%Y-%m-%d')
+        data['end'] = dt['end'].strftime('%Y-%m-%d')
 
     return data
 
@@ -147,7 +163,7 @@ async def read_market_index(db, index, start, end):
         {'$unwind': '$data'},
         {'$project': {
             'symbol': '$symbol', 'long_name': '$long_name', 'data': '$data'}},
-        {'$match': {'data.timestamp': {'$lt': start, '$gte': end}}},
+        {'$match': {'data.timestamp': {'$lte': start, '$gte': end}}},
         {'$group': {
             '_id': {'symbol': '$symbol',
                     'long_name': '$long_name',
@@ -167,19 +183,29 @@ async def read_market_index(db, index, start, end):
         {'$limit': 2000}
     ]).to_list(length=2000)
 
+    if len(res) == 0:
+        start = start - timedelta(days=1)
+        end = start - timedelta(days=2)
+
+        res = await read_market_index(db, index, start, end)
+
     return res
 
 
 async def read_volume_daily_interval(db, symbol, start, end):
+    add = 60 * 60000
+
     res = await db['data'].aggregate([
         {'$match': {'symbol': symbol, 'timestamp': {
             '$lt': start, '$gte': end}}},
         {'$group':
-         {'_id': {'year': {'$year': '$timestamp'},
-                  'doy': {'$dayOfYear': '$timestamp'},
-                  'hrs': {'$hour': '$timestamp'},
-                  'min': {'$subtract': [{'$minute': '$timestamp'}, {'$mod': [
-                          {'$minute': '$timestamp'}, 15]}]}},
+         {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
+                  'doy': {'$dayOfYear': {'$add': ['$timestamp', add]}},
+                  'hrs': {'$hour': {'$add': ['$timestamp', add]}},
+                  'min': {'$subtract': [{'$minute': {'$add': [
+                      '$timestamp', add]}}, {'$mod': [
+                          {'$minute': {'$add': ['$timestamp', add]}}, 15]}
+                  ]}},
           'high': {'$max': '$high_eur'},
           'low': {'$min': '$low_eur'},
           'open': {'$first': '$open_eur'},
@@ -200,29 +226,21 @@ async def read_volume_interval(db, symbol, interval):
     close = []
     volumes = []
 
-    dt = datetime.combine(date.today(), datetime.max.time())
-    tz_name = dt.astimezone().tzname()
-    tz = pytz.timezone(tz_name)
-    now = tz.localize(dt)
-    weekday = now.weekday()
+    dt = get_date_range()
 
-    if weekday == 5:
-        now = now - timedelta(days=1)
-    elif weekday == 6:
-        now = now - timedelta(days=2)
-
-    end = now - timedelta(days=int(interval))
+    start = dt['start']
+    end = dt['start'] - timedelta(days=int(interval))
 
     if int(interval) == 1:
-        res = await read_volume_daily_interval(db, symbol, now, end)
+        res = await read_volume_daily_interval(db, symbol, start, end)
     else:
-        res = await read_volume_monthly_interval(db, symbol, now, end)
+        res = await read_volume_monthly_interval(db, symbol, start, end)
 
     for r in res:
         if int(interval) == 1:
             dt = r['_id']
             dtc = datetime.combine(date(r['_id']['year'], 1, 1), time(
-                r['_id']['hrs'], r['_id']['min']))
+                r['_id']['hrs'], r['_id']['min'], 0))
             dt = dtc + timedelta(days=r['_id']['doy'] - 1)
             hm = dt.strftime('%I:%M')
             dates.append(f'{hm}')
@@ -258,47 +276,24 @@ async def read_volume_interval(db, symbol, interval):
             volumes.append(0)
 
     return {'volumes': volumes, 'dates': dates, 'high': high,
-            'low': low, 'open': open, 'close': close}
+            'low': low, 'open': open, 'close': close,
+            'start': str(start.date()), 'end': str(end.date())}
 
 
 async def read_percentage_differences(db, index):
     data = []
 
-    now = datetime.now()
-    tsz = now.astimezone(timezone('Europe/London'))
-    current = tsz.replace(tzinfo=None)
-    midnight = datetime.combine(date.today(), datetime.min.time())
-    opening = datetime.combine(date.today(), time(8, 30, 0))
+    dt = get_date_range()
+    dt = get_date_range()
 
-    if current >= midnight and current <= opening:
-        current = current - timedelta(days=1)
+    start1 = dt['start']
+    end1 = dt['end']
 
-    now1 = current
-    now2 = current - timedelta(days=1)
+    start2 = start1 - timedelta(days=1)
+    end2 = end1 - timedelta(days=1)
 
-    weekday1 = now1.weekday()
-    weekday2 = now2.weekday()
-
-    if weekday1 == 5:
-        now1 = now1 - timedelta(days=1)
-    elif weekday1 == 6:
-        now1 = now1 - timedelta(days=2)
-
-    if weekday2 == 5:
-        now2 = now2 - timedelta(days=1)
-    elif weekday2 == 6:
-        now2 = now2 - timedelta(days=2)
-
-    end1 = now1 - timedelta(days=1)
-    end2 = now2 - timedelta(days=1)
-
-    dtc_now1 = datetime.combine(now1.date(), datetime.max.time())
-    dtc_now2 = datetime.combine(now2.date(), datetime.max.time())
-    dtc_end1 = datetime.combine(end1.date(), datetime.max.time())
-    dtc_end2 = datetime.combine(end2.date(), datetime.max.time())
-
-    res1 = await read_market_index(db, index, dtc_now1, dtc_end1)
-    res2 = await read_market_index(db, index, dtc_now2, dtc_end2)
+    res1 = await read_market_index(db, index, start1, end1)
+    res2 = await read_market_index(db, index, start2, end2)
 
     if not res1 or not res2:
         return []

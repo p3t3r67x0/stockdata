@@ -42,22 +42,28 @@
           <span class="col-span-5">S&amp;P 500</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('cac30') ? activeClass : inactiveClass]" class="text-white">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/cac30">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">CAC 30</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('aex25') ? activeClass : inactiveClass]" class="text-white">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/aex25">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">AEX 25</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('hsi') ? activeClass : inactiveClass]" class="text-white">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/hsi">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">HSI</span>
+        </nuxt-link>
+      </li>
+      <li @click="toggleNav" :class="[comparePageName('nse') ? activeClass : inactiveClass]" class="text-white">
+        <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/nse">
+          <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
+          <span class="col-span-5">NSE</span>
         </nuxt-link>
       </li>
       <li @click="toggleNav" :class="[comparePageName('symbols') ? activeClass : inactiveClass]" class="text-white">

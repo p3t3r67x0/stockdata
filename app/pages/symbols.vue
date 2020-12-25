@@ -5,7 +5,7 @@
   </h1>
   <table v-if="infos.length > 0" class="table-fixed w-full">
     <tr class="bg-gray-700 text-white text-md">
-      <th colspan="1" class="text-left p-3">Symbol</th>
+      <th colspan="2" class="text-left p-3">Symbol</th>
       <th colspan="2" class="text-left p-3">Company</th>
       <th colspan="1" class="text-left p-3">ISIN</th>
     </tr>

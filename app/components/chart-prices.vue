@@ -1,5 +1,9 @@
 <template>
 <div>
+  <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">
+    <span>Price chart</span>
+    <span v-if="start !== '' && end !== ''" class="font-normal text-lg">({{ end }} - {{ start }})</span>
+  </h2>
   <vue-frappe id="prices" :labels="labels1" type="line" :height="350" :colors="colors1" :dataSets="chart1" />
   <div>
     <button @click="retrieveData(30)" class="bg-gray-400 text-gray-800 px-3 py-2 rounded focus:outline-none">30 day range</button>
@@ -12,6 +16,8 @@
 export default {
   data() {
     return {
+      start: '',
+      end: '',
       labels1: [],
       colors1: ['red', 'orange', 'purple', '#4a5568'],
       chart1: [{
@@ -50,6 +56,8 @@ export default {
         this.chart1[2].values = res['open']
         this.chart1[3].values = res['close']
         this.labels1 = res['dates']
+        this.start = res['start']
+        this.end = res['end']
       })
     }
   }

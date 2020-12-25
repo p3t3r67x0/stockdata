@@ -39,8 +39,8 @@ def read_currency_value(db, symbol, timestamp):
     start = ts - timedelta(hours=2)
     end = ts + timedelta(hours=2)
 
-    res = db['forex'].aggregate([{
-        '$match': {'symbol': symbol, 'timestamp': {
+    res = db['forex'].aggregate([
+        {'$match': {'symbol': symbol, 'timestamp': {
             '$gte': start, '$lte': end}}},
         {'$project': {'timestamp': 1, 'high': '$high', 'low': '$low',
                       'open': '$open', 'close': '$close',
@@ -168,7 +168,7 @@ def request_download(db, symbol, flag):
         print()
     elif flag == 'short':
         factor_start = -1
-        factor_end = 1
+        factor_end = 6
 
         handle_datestring(db, symbol, factor_start, factor_end)
 
