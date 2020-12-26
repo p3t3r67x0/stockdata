@@ -10,7 +10,7 @@
       <th colspan="1" class="text-left p-3">Last & Current price</th>
       <th colspan="1" class="text-left p-3">Percentage</th>
     </tr>
-    <tr v-for="value in values" :class="[value['percent'] >= 0 ? 'even:bg-green-150 odd:bg-green-200' : 'even:bg-red-200 odd:bg-red-150']">
+    <tr v-for="value in values" class="even:bg-gray-400 odd:bg-gray-200">
       <td colspan="2" class="p-3">
         <nuxt-link :to="makeLink(value['symbol'])" class="text-xl sm:text-2xl block">
           <span class="bg-blue-500 font-sans text-white px-1">{{ value['symbol'] }}</span>
@@ -44,7 +44,10 @@
                 <span>{{ value['data'][0]['close'] }} EUR</span>
               </nuxt-link>
             </td>
-            <td class="px-3">
+            <td class="flex justify-round px-3">
+              <fa v-if="value['percent'] > 0" :icon="['fas', 'arrow-alt-circle-up']" class="text-xl text-green-500 bg-white rounded-full mt-1 mr-4" />
+              <fa v-if="value['percent'] === 0" :icon="['fas', 'arrow-alt-circle-right']" class="text-xl text-blue-500 bg-white rounded-full mt-1 mr-4" />
+              <fa v-if="value['percent'] < 0" :icon="['fas', 'arrow-alt-circle-down']" class="text-xl text-red-500 bg-white rounded-full mt-1 mr-4" />
               <nuxt-link :to="makeLink(value['symbol'])" class="text-xl block">{{ value['percent'] > 0 ? '+' + value['percent'] : value['percent'] }} %</nuxt-link>
             </td>
           </tr>
