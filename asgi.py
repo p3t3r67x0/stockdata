@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import math
+import holidays
 import motor.motor_asyncio
-import yfinance as yf
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,54 +44,86 @@ def connect_mongodb():
     return db
 
 
-def download_dataset(symbol, start, end):
-    d = yf.download(symbol, period='1d', interval='1m', start=start, end=end)
+def substract_weekend(start, end):
+    wkd_start = start.weekday()
+    wkd_end = end.weekday()
 
-    return d
+    if wkd_start == 5:
+        start = start - timedelta(days=1)
+    elif wkd_start == 6:
+        start = start - timedelta(days=2)
+
+    if wkd_end == 5:
+        end = end - timedelta(days=1)
+    elif wkd_end == 6:
+        end = end - timedelta(days=2)
+
+    return {'start': start, 'end': end}
 
 
-def get_date_range():
+async def get_date_ranges(interval, period):
+    hol = holidays.HolidayBase()
+    hol.append({datetime(date.today().year, 1, 1): 'Neujahr'})
+    hol.append({datetime(date.today().year, 4, 10): 'Karfreitag'})
+    hol.append({datetime(date.today().year, 4, 13): 'Ostermontag'})
+    hol.append({datetime(date.today().year, 5, 1): 'Tag der Arbeit'})
+    hol.append({datetime(date.today().year, 5, 21): 'Christi Himmelfahrt'})
+    hol.append({datetime(date.today().year, 6, 1): 'Pfingstmontag'})
+    hol.append({datetime(date.today().year, 10, 3): 'Tag der dt. Einheit'})
+    hol.append({datetime(date.today().year, 12, 24): 'Heiligabend'})
+    hol.append({datetime(date.today().year, 12, 25): '1. Weihnachtsfeiertag'})
+    hol.append({datetime(date.today().year, 12, 26): '2. Weihnachtsfeiertag'})
+    hol.append({datetime(date.today().year, 12, 31): 'Silvester'})
+
+    dates = []
+
     now = datetime.now()
     tsz = now.astimezone(timezone('Europe/London'))
-    current = tsz.replace(tzinfo=None)
-    midnight = datetime.combine(date.today(), datetime.min.time())
-    opening = datetime.combine(date.today(), time(8, 30, 0))
+    start = tsz.replace(tzinfo=None)
+    end = start - timedelta(days=period)
 
-    if current >= midnight and current <= opening:
-        current = current - timedelta(days=1)
+    for i in range(0, interval, period):
+        dtc_start = datetime.combine(start.date(), datetime.min.time())
+        dtc_end = datetime.combine(end.date(), datetime.min.time())
 
-    weekday1 = current.weekday()
+        dt_start = dtc_start - timedelta(days=1 + i)
+        dt_end = dtc_end - timedelta(days=1 + i)
 
-    if weekday1 == 5:
-        current = current - timedelta(days=1)
-    elif weekday1 == 6:
-        current = current - timedelta(days=2)
+        sw = substract_weekend(dt_start, dt_end)
 
-    end = current - timedelta(days=1)
+        dates.append({'start': sw['start'], 'end': sw['end']})
 
-    start = datetime.combine(current.date(), datetime.max.time())
-    end = datetime.combine(end.date(), datetime.max.time())
+    for i, d in enumerate(dates):
+        if d['start'] in hol or d['end'] in hol:
+            start = d['start'] - timedelta(days=1)
+            end = d['end'] - timedelta(days=1)
+        else:
+            start = d['start']
+            end = d['end']
 
-    return {'start': start.replace(microsecond=0),
-            'end': end.replace(microsecond=0)}
+        sw = substract_weekend(start, end)
+
+        d['start'] = sw['start']
+        d['end'] = sw['end']
+
+    return dates
 
 
-async def read_average(db, symbol, field, days):
+async def read_average(db, symbol, field, period):
     data = {}
 
-    dt = get_date_range()
+    dr = await get_date_ranges(interval=1, period=period)
 
     res = await db['data'].aggregate([
         {'$match': {'symbol': symbol, 'timestamp': {
-            '$lt': dt['start'], '$gte': dt['end']}}},
-        {'$group': {'_id': '$symbol', 'average':
-                    {'$avg': f'${field}'}}},
+            '$lt': dr[0]['start'], '$gte': dr[0]['end']}}},
+        {'$group': {'_id': '$symbol', 'average': {'$avg': f'${field}'}}},
         {'$limit': 1}]).to_list(length=1)
 
     if res and res[0]['average'] is not None and not is_nan(res[0]['average']):
         data['value'] = str(round(res[0]['average'], 2))
-        data['start'] = dt['start'].strftime('%Y-%m-%d')
-        data['end'] = dt['end'].strftime('%Y-%m-%d')
+        data['start'] = dr[0]['start'].date()
+        data['end'] = dr[0]['end'].date()
 
     return data
 
@@ -139,7 +171,7 @@ async def lookup_query(db, q):
     return res
 
 
-async def read_volume_monthly_interval(db, symbol, start, end):
+async def read_monthly_volume(db, symbol, start, end):
     res = await db['data'].aggregate([
         {'$match': {'symbol': symbol, 'timestamp': {
             '$lt': start, '$gte': end}}},
@@ -183,16 +215,10 @@ async def read_market_index(db, index, start, end):
         {'$limit': 2000}
     ]).to_list(length=2000)
 
-    if len(res) == 0:
-        start = start - timedelta(days=1)
-        end = start - timedelta(days=2)
-
-        res = await read_market_index(db, index, start, end)
-
     return res
 
 
-async def read_volume_daily_interval(db, symbol, start, end):
+async def read_daily_volume(db, symbol, start, end):
     add = 60 * 60000
 
     res = await db['data'].aggregate([
@@ -218,7 +244,7 @@ async def read_volume_daily_interval(db, symbol, start, end):
     return res
 
 
-async def read_volume_interval(db, symbol, interval):
+async def read_volume_period(db, symbol, period):
     dates = []
     high = []
     low = []
@@ -226,18 +252,18 @@ async def read_volume_interval(db, symbol, interval):
     close = []
     volumes = []
 
-    dt = get_date_range()
+    dr = await get_date_ranges(interval=1, period=period)
 
-    start = dt['start']
-    end = dt['start'] - timedelta(days=int(interval))
+    start = dr[0]['start']
+    end = dr[0]['start']
 
-    if int(interval) == 1:
-        res = await read_volume_daily_interval(db, symbol, start, end)
+    if period == 1:
+        res = await read_daily_volume(db, symbol, start, end)
     else:
-        res = await read_volume_monthly_interval(db, symbol, start, end)
+        res = await read_monthly_volume(db, symbol, start, end)
 
     for r in res:
-        if int(interval) == 1:
+        if period == 1:
             dt = r['_id']
             dtc = datetime.combine(date(r['_id']['year'], 1, 1), time(
                 r['_id']['hrs'], r['_id']['min'], 0))
@@ -280,23 +306,16 @@ async def read_volume_interval(db, symbol, interval):
             'start': str(start.date()), 'end': str(end.date())}
 
 
-async def read_percentage_differences(db, index):
+async def read_percentages(db, index):
     data = []
 
-    dt = get_date_range()
-    dt = get_date_range()
+    dr = await get_date_ranges(interval=2, period=1)
 
-    start1 = dt['start']
-    end1 = dt['end']
+    print(dr[0]['start'], dr[0]['end'])
+    print(dr[1]['start'], dr[1]['end'])
 
-    start2 = start1 - timedelta(days=1)
-    end2 = end1 - timedelta(days=1)
-
-    res1 = await read_market_index(db, index, start1, end1)
-    res2 = await read_market_index(db, index, start2, end2)
-
-    if not res1 or not res2:
-        return []
+    res1 = await read_market_index(db, index, dr[0]['start'], dr[0]['end'])
+    res2 = await read_market_index(db, index, dr[1]['start'], dr[1]['end'])
 
     for i in res1:
         dt = datetime(i['_id']['year'], i['_id']['mth'], i['_id']['dom'])
@@ -384,7 +403,7 @@ async def list_all_symbols():
 
 @app.get('/percentages/market/{index}')
 async def list_market_percentages(index):
-    values = await read_percentage_differences(db, index)
+    values = await read_percentages(db, index)
 
     return values
 
@@ -396,11 +415,11 @@ async def list_market_symbols(index):
     return {'values': [v for v in values]}
 
 
-@app.get('/volume/{symbol}/{interval}')
-async def volume_interval(symbol, interval):
+@app.get('/volume/{symbol}/{period:int}')
+async def list_volumes(symbol, period):
     symbol = symbol.upper()
 
-    res = await read_volume_interval(db, symbol, interval)
+    res = await read_volume_period(db, symbol, period)
 
     return res
 
@@ -414,10 +433,10 @@ async def average_values(symbol):
     symbols = await read_symbols(db)
 
     if symbol not in [s for s in symbols]:
-        return {}
+        return object
 
-    high_two_days = await read_average(db, symbol, 'high_eur', 2)
-    object['high_two_days'] = high_two_days
+    high_intra_day = await read_average(db, symbol, 'high_eur', 1)
+    object['high_intra_day'] = high_intra_day
 
     high_ten_days = await read_average(db, symbol, 'high_eur', 10)
     object['high_ten_days'] = high_ten_days
@@ -425,8 +444,8 @@ async def average_values(symbol):
     high_thirty_days = await read_average(db, symbol, 'high_eur', 30)
     object['high_thirty_days'] = high_thirty_days
 
-    low_two_days = await read_average(db, symbol, 'low_eur', 2)
-    object['low_two_days'] = low_two_days
+    low_intra_day = await read_average(db, symbol, 'low_eur', 1)
+    object['low_intra_day'] = low_intra_day
 
     low_ten_days = await read_average(db, symbol, 'low_eur', 10)
     object['low_ten_days'] = low_ten_days
@@ -434,8 +453,8 @@ async def average_values(symbol):
     low_thirty_days = await read_average(db, symbol, 'low_eur', 30)
     object['low_thirty_days'] = low_thirty_days
 
-    open_two_days = await read_average(db, symbol, 'open_eur', 2)
-    object['open_two_days'] = open_two_days
+    open_intra_day = await read_average(db, symbol, 'open_eur', 1)
+    object['open_intra_day'] = open_intra_day
 
     open_ten_days = await read_average(db, symbol, 'open_eur', 10)
     object['open_ten_days'] = open_ten_days
@@ -443,8 +462,8 @@ async def average_values(symbol):
     open_thirty_days = await read_average(db, symbol, 'open_eur', 30)
     object['open_thirty_days'] = open_thirty_days
 
-    close_two_days = await read_average(db, symbol, 'close_eur', 2)
-    object['close_two_days'] = close_two_days
+    close_intra_day = await read_average(db, symbol, 'close_eur', 1)
+    object['close_intra_day'] = close_intra_day
 
     close_ten_days = await read_average(db, symbol, 'close_eur', 10)
     object['close_ten_days'] = close_ten_days
@@ -452,9 +471,9 @@ async def average_values(symbol):
     close_thirty_days = await read_average(db, symbol, 'close_eur', 30)
     object['close_thirty_days'] = close_thirty_days
 
-    adjust_two_days = await read_average(
-        db, symbol, 'adjust_close_eur', 2)
-    object['adjust_two_days'] = adjust_two_days
+    adjust_intra_day = await read_average(
+        db, symbol, 'adjust_close_eur', 1)
+    object['adjust_intra_day'] = adjust_intra_day
 
     adjust_ten_days = await read_average(
         db, symbol, 'adjust_close_eur', 10)

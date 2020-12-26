@@ -16,10 +16,10 @@
       <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">High 2 days</td>
-      <td class="p-3">{{ avgData['averages']['high_two_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_two_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_two_days']['value'] }} EUR</td>
+      <td class="font-bold p-3">High intra day</td>
+      <td class="p-3">{{ avgData['averages']['high_intra_day']['end'] }}</td>
+      <td class="p-3">{{ avgData['averages']['high_intra_day']['start'] }}</td>
+      <td class="p-3">{{ avgData['averages']['high_intra_day']['value'] }} EUR</td>
     </tr>
     <tr class="bg-gray-300 text-lg">
       <td class="font-bold p-3">High 10 days</td>
@@ -42,10 +42,10 @@
       <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Low 2 days</td>
-      <td class="p-3">{{ avgData['averages']['low_two_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_two_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_two_days']['value'] }} EUR</td>
+      <td class="font-bold p-3">Low intra day</td>
+      <td class="p-3">{{ avgData['averages']['low_intra_day']['end'] }}</td>
+      <td class="p-3">{{ avgData['averages']['low_intra_day']['start'] }}</td>
+      <td class="p-3">{{ avgData['averages']['low_intra_day']['value'] }} EUR</td>
     </tr>
     <tr class="bg-gray-300 text-lg">
       <td class="font-bold p-3">Low 10 days</td>
@@ -68,10 +68,10 @@
       <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Open 2 days</td>
-      <td class="p-3">{{ avgData['averages']['open_two_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_two_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_two_days']['value'] }} EUR</td>
+      <td class="font-bold p-3">Open intra day</td>
+      <td class="p-3">{{ avgData['averages']['open_intra_day']['end'] }}</td>
+      <td class="p-3">{{ avgData['averages']['open_intra_day']['start'] }}</td>
+      <td class="p-3">{{ avgData['averages']['open_intra_day']['value'] }} EUR</td>
     </tr>
     <tr class="bg-gray-100 text-lg">
       <td class="font-bold p-3">Open 10 days</td>
@@ -94,10 +94,10 @@
       <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Close 2 days</td>
-      <td class="p-3">{{ avgData['averages']['close_two_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_two_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_two_days']['value'] }} EUR</td>
+      <td class="font-bold p-3">Close intra day</td>
+      <td class="p-3">{{ avgData['averages']['close_intra_day']['end'] }}</td>
+      <td class="p-3">{{ avgData['averages']['close_intra_day']['start'] }}</td>
+      <td class="p-3">{{ avgData['averages']['close_intra_day']['value'] }} EUR</td>
     </tr>
     <tr class="bg-gray-300 text-lg">
       <td class="font-bold p-3">Close 10 days</td>
@@ -120,10 +120,10 @@
       <th class="w-1/6 text-left p-3">Average</th>
     </tr>
     <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Adjust close 2 days</td>
-      <td class="p-3">{{ avgData['averages']['adjust_two_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_two_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_two_days']['value'] }} EUR</td>
+      <td class="font-bold p-3">Adjust close intra day</td>
+      <td class="p-3">{{ avgData['averages']['adjust_intra_day']['end'] }}</td>
+      <td class="p-3">{{ avgData['averages']['adjust_intra_day']['start'] }}</td>
+      <td class="p-3">{{ avgData['averages']['adjust_intra_day']['value'] }} EUR</td>
     </tr>
     <tr class="bg-gray-100 text-lg">
       <td class="font-bold p-3">Adjust close 10 days</td>
