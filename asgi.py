@@ -172,17 +172,24 @@ async def lookup_query(db, q):
 
 
 async def read_monthly_volume(db, symbol, start, end):
+    add = 60 * 60000
+
     res = await db['data'].aggregate([
         {'$match': {'symbol': symbol, 'timestamp': {
             '$lt': start, '$gte': end}}},
-        {'$group': {'_id': {'$dayOfYear': '$timestamp'},
-                    'high': {'$max': '$high_eur'},
-                    'low': {'$min': '$low_eur'},
-                    'open': {'$first': '$open_eur'},
-                    'close': {'$last': '$close_eur'},
-                    'volume': {'$sum': '$volume'}}},
-        {'$sort': {'_id': 1}},
-    ]).to_list(length=10000)
+        {'$group':
+         {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
+                  'mth': {'$month': {'$add': ['$timestamp', add]}},
+                  'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}}},
+          'high': {'$max': '$high_eur'},
+          'low': {'$min': '$low_eur'},
+          'open': {'$first': '$open_eur'},
+          'close': {'$last': '$close_eur'},
+          'volume': {'$sum': '$volume'}
+          }},
+        {'$sort': {'_id.year': 1, '_id.mth': 1, '_id.dom': 1}},
+        {'$limit': 100}
+    ]).to_list(length=100)
 
     return res
 
@@ -226,7 +233,8 @@ async def read_daily_volume(db, symbol, start, end):
             '$lt': start, '$gte': end}}},
         {'$group':
          {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
-                  'doy': {'$dayOfYear': {'$add': ['$timestamp', add]}},
+                  'mth': {'$month': {'$add': ['$timestamp', add]}},
+                  'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}},
                   'hrs': {'$hour': {'$add': ['$timestamp', add]}},
                   'min': {'$subtract': [{'$minute': {'$add': [
                       '$timestamp', add]}}, {'$mod': [
@@ -238,7 +246,8 @@ async def read_daily_volume(db, symbol, start, end):
           'close': {'$last': '$close_eur'},
           'volume': {'$sum': '$volume'}
           }},
-        {'$sort': {'year': 1, '_id.doy': 1, '_id.hrs': 1, '_id.min': 1}}
+        {'$sort': {
+            'year': 1, '_id.mth': 1, '_id.dom': 1, '_id.hrs': 1, '_id.min': 1}}
     ]).to_list(length=100)
 
     return res
@@ -255,7 +264,7 @@ async def read_volume_period(db, symbol, period):
     dr = await get_date_ranges(interval=1, period=period)
 
     start = dr[0]['start']
-    end = dr[0]['start']
+    end = dr[0]['end']
 
     if period == 1:
         res = await read_daily_volume(db, symbol, start, end)
@@ -264,17 +273,16 @@ async def read_volume_period(db, symbol, period):
 
     for r in res:
         if period == 1:
-            dt = r['_id']
-            dtc = datetime.combine(date(r['_id']['year'], 1, 1), time(
-                r['_id']['hrs'], r['_id']['min'], 0))
-            dt = dtc + timedelta(days=r['_id']['doy'] - 1)
-            hm = dt.strftime('%I:%M')
+            dtc = datetime.combine(date(
+                r['_id']['year'], r['_id']['mth'], r['_id']['dom']),
+                time(r['_id']['hrs'], r['_id']['min'], 0))
+            hm = dtc.strftime('%I:%M')
             dates.append(f'{hm}')
         else:
-            dtc = datetime.combine(
-                date(date.today().year, 1, 1), datetime.max.time())
-            dt = dtc + timedelta(days=r['_id'] - 1)
-            dates.append(f'{dt.day}.{dt.month}.')
+            tm = datetime.min.time()
+            dtc = datetime.combine(date(
+                r['_id']['year'], r['_id']['mth'], r['_id']['dom']), tm)
+            dates.append(f'{dtc.day}.{dtc.month}.')
 
         if r['high'] is not None:
             high.append(round(r['high'], 2))
@@ -310,9 +318,6 @@ async def read_percentages(db, index):
     data = []
 
     dr = await get_date_ranges(interval=2, period=1)
-
-    print(dr[0]['start'], dr[0]['end'])
-    print(dr[1]['start'], dr[1]['end'])
 
     res1 = await read_market_index(db, index, dr[0]['start'], dr[0]['end'])
     res2 = await read_market_index(db, index, dr[1]['start'], dr[1]['end'])
