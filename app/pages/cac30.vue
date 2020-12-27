@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h1 class="text-teal-900 text-4xl font-bold font-sans mb-6">
+  <h1 class="text-teal-900 text-xl sm:text-4xl font-bold font-sans mb-6">
     CAC market index
   </h1>
   <table class="border-collapse w-full">
@@ -13,11 +13,11 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="value in values" class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-6 sm:mb-0">
+      <tr @click="routeTo(value['symbol'])" v-for="value in values" class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-3 sm:mb-0">
         <td class="flex bg-gray-200 w-full">
           <span class="w-8/12 text-gray-900 text-md sm:text-xl font-bold break-words p-1">{{ value['long_name'] }}</span>
           <span class="w-4/12 text-white p-1 text-right">
-            <span class="bg-indigo-500 font-sans text-white sm:p-1">{{ value['symbol'] }}</span>
+            <span class="bg-indigo-500 font-sans text-white p-1">{{ value['symbol'] }}</span>
           </span>
         </td>
         <td class="flex bg-gray-300 w-full">
@@ -70,8 +70,13 @@ export default {
     })
   },
   methods: {
-    makeLink(value) {
-      return `/average/${value}`
+    routeTo(value) {
+      this.$router.push({
+        name: 'average-symbol',
+        params: {
+          symbol: value.toLowerCase()
+        }
+      })
     }
   }
 }

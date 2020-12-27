@@ -1,7 +1,7 @@
 <template>
 <div>
   <div v-if="avgData && 'symbol' in avgData" class="mb-6">
-    <h1 class="text-teal-900 text-4xl font-bold font-sans mb-6">
+    <h1 class="text-teal-900 text-xl sm:text-4xl font-bold font-sans mb-6">
       <span class="bg-red-500 text-white px-1">{{ avgData['symbol'] }}</span>
       <span>{{ avgData['long_name']}}</span>
     </h1>

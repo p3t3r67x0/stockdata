@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h1 class="text-teal-900 text-4xl font-bold font-sans mb-6">
+  <h1 class="text-teal-900 text-xl sm:text-4xl font-bold font-sans mb-6">
     International markets
   </h1>
   <table v-if="infos.length > 0" class="table-fixed w-full">
@@ -40,8 +40,13 @@ export default {
     })
   },
   methods: {
-    makeLink(value) {
-      return `/average/${value}`
+    routeTo(value) {
+      this.$router.push({
+        name: 'average-symbol',
+        params: {
+          symbol: value.toLowerCase()
+        }
+      })
     }
   }
 }
