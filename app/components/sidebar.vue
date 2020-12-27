@@ -1,8 +1,15 @@
 <template>
 <div v-click-outside="hideNav" class="sm:flex sm:min-h-screen h-12 sm:h-auto">
   <div class="fixed w-full top-0 left-0 sm:w-64 overflow-y-auto transition duration-300 transform ease-in overflow-y-auto sm:translate-x-0 sm:static sm:inset-0 z-50 sm:z-0 bg-gray-900">
-    <div class="flex justify-center items-center bg-blue-500 sm:border-b-4 sm:border-white h-12 sm:h-16 lg:h-20">
+    <div class="flex justify-between sm:justify-center items-center bg-blue-500 sm:border-b-4 sm:border-white h-12 sm:h-16 lg:h-20">
       <nuxt-link to="/" class="tracking-wide font-sans text-white text-2xl sm:text-3xl px-2 sm:px-4">stocklify.xyz</nuxt-link>
+
+      <div @click="toggleNav" class="flex flex-cols sm:hidden focus:outline-none overflow-hidden cursor-pointer mr-3">
+        <svg class="w-5 h-5 text-white hover:text-white focus:outline-none fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <title>Menu</title>
+          <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"></path>
+        </svg>
+      </div>
     </div>
 
     <ul :class="[showNav ? 'block z-50' : 'hidden']" class="sm:block sm:mt-8">
@@ -72,7 +79,6 @@
           <span class="col-span-5">Market</span>
         </nuxt-link>
       </li>
-
     </ul>
   </div>
 </div>
@@ -100,7 +106,7 @@ export default {
       return this.showNav = !this.showNav
     },
     comparePageName(value) {
-      return true; // this.pageName === `${value}___${this.$i18n.locale}`
+      return this.pageName === value
     }
   }
 }
