@@ -13,61 +13,61 @@
     </div>
 
     <ul :class="[showNav ? 'block z-50' : 'hidden']" class="sm:block sm:mt-8">
-      <li @click="toggleNav" :class="[comparePageName('dax30') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('dax30') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/dax30">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">DAX 30</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('mdax') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('mdax') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/mdax">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">M DAX</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('sdax') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('sdax') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/sdax">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">S DAX</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('tecdax') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('tecdax') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/tecdax">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">TecDAX</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('djia') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('djia') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/djia">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">Dow Jones</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('sandp500') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/sandp500">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">S&amp;P 500</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('cac30') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('cac30') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/cac30">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">CAC 30</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('aex25') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('aex25') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/aex25">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">AEX 25</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('hsi') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('hsi') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/hsi">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">HSI</span>
         </nuxt-link>
       </li>
-      <li @click="toggleNav" :class="[comparePageName('nse') ? activeClass : inactiveClass]" class="text-white">
+      <li @click="toggleNav" :class="[comparePageName('nse') ? activeClass : inactiveClass]" class="text-white border-b sm:border-b-0 border-gray-700">
         <nuxt-link class="grid grid-cols-6 focus:outline-none sm:mt-1 py-3 px-3 sm:px-6" to="/nse">
           <fa :icon="['fas', 'chart-line']" class="col-span-1 mt-1" />
           <span class="col-span-5">NSE</span>
@@ -89,8 +89,8 @@ export default {
   data() {
     return {
       showNav: false,
-      activeClass: 'bg-gray-600 bg-opacity-25 text-gray-100 border-gray-100',
-      inactiveClass: 'border-gray-900 text-white hover:bg-gray-600 hover:bg-opacity-25 hover:text-gray-100'
+      activeClass: 'bg-gray-600 bg-opacity-25 text-gray-100',
+      inactiveClass: 'text-white hover:bg-gray-600 hover:bg-opacity-25 hover:text-gray-100'
     }
   },
   computed: {
