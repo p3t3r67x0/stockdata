@@ -14,8 +14,8 @@
     </thead>
     <tbody>
       <tr @click="routeTo(value['symbol'])" v-for="value in values" class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-3 sm:mb-0">
-        <td class="flex bg-gray-200 w-full">
-          <span class="w-8/12 text-gray-900 text-md sm:text-xl font-bold break-words p-1">{{ value['long_name'] }}</span>
+        <td class="flex bg-gray-700 text-white w-full">
+          <span class="w-8/12 text-md sm:text-xl font-bold break-words p-1">{{ value['long_name'] }}</span>
           <span class="w-4/12 text-white p-1 text-right">
             <span class="bg-indigo-500 font-sans text-white p-1">{{ value['symbol'] }}</span>
           </span>
@@ -43,7 +43,7 @@
             <span class="w-3/5">
               {{ value['data'][0]['close'] }} EUR
             </span>
-            <span class="w-2/5">
+            <span class="w-2/5 text-right">
               <fa v-if="value['percent'] > 0" :icon="['fas', 'arrow-alt-circle-up']" class="text-md sm:text-xl text-green-500 bg-white rounded-full mt-1 mr-1 sm:mr-4" />
               <fa v-if="value['percent'] === 0" :icon="['fas', 'arrow-alt-circle-right']" class="text-md sm:text-xl text-blue-500 bg-white rounded-full mt-1 mr-1 sm:mr-4" />
               <fa v-if="value['percent'] < 0" :icon="['fas', 'arrow-alt-circle-down']" class="text-md sm:text-xl text-red-500 bg-white rounded-full mt-1 mr-1 sm:mr-4" />
