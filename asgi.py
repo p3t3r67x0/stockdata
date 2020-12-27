@@ -101,7 +101,11 @@ async def get_date_ranges(interval, period):
     now = datetime.now()
     tsz = now.astimezone(timezone('Europe/London'))
     start = tsz.replace(tzinfo=None)
-    end = start - timedelta(days=1)
+
+    if period > 1:
+        end = start - timedelta(days=period)
+    else:
+        end = start - timedelta(days=1)
 
     dtc_start = datetime.combine(start.date(), datetime.min.time())
     dtc_end = datetime.combine(end.date(), datetime.min.time())
@@ -127,7 +131,7 @@ async def get_date_ranges(interval, period):
 async def read_average(db, symbol, field, period):
     data = {}
 
-    dr = await get_date_ranges(interval=1, period=period)
+    dr = await get_date_ranges(interval=1, period=int(period))
 
     res = await db['data'].aggregate([
         {'$match': {'symbol': symbol, 'timestamp': {
