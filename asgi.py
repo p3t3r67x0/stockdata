@@ -233,7 +233,7 @@ async def read_monthly_volume(db, symbol, start, end):
 
 async def read_newcommer_closes(db):
     res = await db['data'].aggregate([
-        {'$match': {'close_eur': {'$lte': 3.0}}}, {'$sort': {
+        {'$match': {'close_eur': {'$lte': 4.60}}}, {'$sort': {
             'close_eur': 1, 'timestamp': 1}},
         {'$group': {'_id': '$symbol', 'close_eur': {'$first': '$close_eur'},
                     'timestamp': {'$first': '$timestamp'}}},
@@ -241,7 +241,9 @@ async def read_newcommer_closes(db):
                      'foreignField': 'symbol', 'as': 'info'}},
         {'$unwind': '$info'},
         {'$project': {'industry': '$info.industry',
+                      'long_name': '$info.long_name',
                       'close_eur': '$close_eur'}},
+        {'$sort': {'close_eur': -1, 'score': {'$meta': 'textScore'}}},
         {'$limit': 250}
     ]).to_list(length=250)
 
