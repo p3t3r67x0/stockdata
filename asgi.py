@@ -44,24 +44,25 @@ def connect_mongodb():
     return db
 
 
-def substract_weekend(start, end):
-    wkd_start = start.weekday()
-    wkd_end = end.weekday()
+async def substract_weekends(dates):
+    for d in dates:
+        wkd_start = d['start'].weekday()
+        wkd_end = d['end'].weekday()
 
-    if wkd_start == 5:
-        start = start - timedelta(days=1)
-    elif wkd_start == 6:
-        start = start - timedelta(days=2)
+        if wkd_start == 5:
+            d['start'] = d['start'] - timedelta(days=1)
+        elif wkd_start == 6:
+            d['start'] = d['start'] - timedelta(days=2)
 
-    if wkd_end == 5:
-        end = end - timedelta(days=1)
-    elif wkd_end == 6:
-        end = end - timedelta(days=2)
+        if wkd_end == 5:
+            d['end'] = d['end'] - timedelta(days=1)
+        elif wkd_end == 6:
+            d['end'] = d['end'] - timedelta(days=2)
 
-    return {'start': start, 'end': end}
+    return dates
 
 
-async def get_date_ranges(interval, period):
+async def substract_holidays(dates):
     hol = holidays.HolidayBase()
     hol.append({datetime(date.today().year, 1, 1): 'Neujahr'})
     hol.append({datetime(date.today().year, 4, 10): 'Karfreitag'})
@@ -75,36 +76,50 @@ async def get_date_ranges(interval, period):
     hol.append({datetime(date.today().year, 12, 26): '2. Weihnachtsfeiertag'})
     hol.append({datetime(date.today().year, 12, 31): 'Silvester'})
 
+    while any([True if x['start'] in hol or x['end']
+               in hol else False for x in dates]):
+        for d in dates:
+            if d['start'] in hol and d['end'] in hol:
+                d['start'] = d['start'] - timedelta(days=1)
+                d['end'] = d['end'] - timedelta(days=1)
+            elif d['start'] in hol:
+                d['start'] = d['start'] - timedelta(days=1)
+                d['end'] = d['end'] - timedelta(days=1)
+            elif d['end'] in hol:
+                d['start'] = d['start']
+                d['end'] = d['end'] - timedelta(days=1)
+            else:
+                d['start'] = d['start']
+                d['end'] = d['end']
+
+    return dates
+
+
+async def get_date_ranges(interval, period):
     dates = []
 
     now = datetime.now()
     tsz = now.astimezone(timezone('Europe/London'))
     start = tsz.replace(tzinfo=None)
-    end = start - timedelta(days=period)
+    end = start - timedelta(days=1)
 
-    for i in range(0, interval, period):
-        dtc_start = datetime.combine(start.date(), datetime.min.time())
-        dtc_end = datetime.combine(end.date(), datetime.min.time())
+    dtc_start = datetime.combine(start.date(), datetime.min.time())
+    dtc_end = datetime.combine(end.date(), datetime.min.time())
 
-        dt_start = dtc_start - timedelta(days=1 + i)
-        dt_end = dtc_end - timedelta(days=1 + i)
+    dates.append({'start': dtc_start, 'end': dtc_end})
 
-        sw = substract_weekend(dt_start, dt_end)
+    if period > 0:
+        for i in range(1, interval, period):
+            dtc_start = datetime.combine(start.date(), datetime.min.time())
+            dtc_end = datetime.combine(end.date(), datetime.min.time())
 
-        dates.append({'start': sw['start'], 'end': sw['end']})
+            dt_start = dtc_start - timedelta(days=1 + i)
+            dt_end = dtc_end - timedelta(days=1 + i)
 
-    for i, d in enumerate(dates):
-        if d['start'] in hol or d['end'] in hol:
-            start = d['start'] - timedelta(days=1)
-            end = d['end'] - timedelta(days=1)
-        else:
-            start = d['start']
-            end = d['end']
+            dates.append({'start': dt_start, 'end': dt_end})
 
-        sw = substract_weekend(start, end)
-
-        d['start'] = sw['start']
-        d['end'] = sw['end']
+    dates = await substract_holidays(dates)
+    dates = await substract_weekends(dates)
 
     return dates
 
