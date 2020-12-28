@@ -231,6 +231,23 @@ async def read_monthly_volume(db, symbol, start, end):
     return res
 
 
+async def read_newcommer_closes(db):
+    res = await db['data'].aggregate([
+        {'$match': {'close_eur': {'$lte': 3.0}}}, {'$sort': {
+            'close_eur': 1, 'timestamp': 1}},
+        {'$group': {'_id': '$symbol', 'close_eur': {'$first': '$close_eur'},
+                    'timestamp': {'$first': '$timestamp'}}},
+        {'$lookup': {'from': 'info', 'localField': '_id',
+                     'foreignField': 'symbol', 'as': 'info'}},
+        {'$unwind': '$info'},
+        {'$project': {'industry': '$info.industry',
+                      'close_eur': '$close_eur'}},
+        {'$limit': 250}
+    ]).to_list(length=250)
+
+    return res
+
+
 async def read_market_index(db, index, start, end):
     res = await db['info'].aggregate([
         {'$match': {'market_index': index}},
@@ -409,11 +426,15 @@ app = FastAPI()
 db = connect_mongodb()
 
 db['data'].create_index(
-    [('symbol', ASCENDING), ('timestamp', ASCENDING)], unique=True
+    [('symbol', ASCENDING),
+     ('timestamp', ASCENDING)], unique=True
 )
 
 db['info'].create_index(
-    [('long_name', TEXT), ('symbol', TEXT), ('isin', TEXT)], name='query_index'
+    [('long_name', TEXT),
+     ('industry', TEXT),
+     ('symbol', TEXT),
+     ('isin', TEXT)], name='query_index'
 )
 
 origins = [
@@ -441,6 +462,20 @@ async def list_all_symbols():
     values = await read_short_info(db)
 
     return {'values': [v for v in values]}
+
+
+@app.get('/newcommers/all')
+async def list_all_newcommers():
+    values = await read_newcommer_closes(db)
+    data = []
+
+    for v in values:
+        if 'close_eur' in v:
+            v['close_eur'] = format(round(v['close_eur'], 2), '.2f')
+
+        data.append(v)
+
+    return {'values': data}
 
 
 @app.get('/percentages/market/{index}')
