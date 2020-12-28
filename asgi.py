@@ -44,6 +44,23 @@ def connect_mongodb():
     return db
 
 
+async def substract_hours(dates):
+    now = datetime.now()
+
+    dtc_noh = datetime.combine(now.date(), time(9, 0, 0))
+    dtc_ncl = datetime.combine(now.date(), time(17, 30, 0))
+
+    for d in dates:
+        if now <= dtc_noh and now >= dtc_ncl:
+            d['start'] = d['start'] - timedelta(days=1)
+            d['end'] = d['end'] - timedelta(days=1)
+
+    dates = await substract_holidays(dates)
+    dates = await substract_weekends(dates)
+
+    return dates
+
+
 async def substract_weekends(dates):
     for d in dates:
         wkd_start = d['start'].weekday()
@@ -124,6 +141,7 @@ async def get_date_ranges(interval, period):
 
     dates = await substract_holidays(dates)
     dates = await substract_weekends(dates)
+    dates = await substract_hours(dates)
 
     return dates
 
