@@ -1,161 +1,241 @@
 <template>
 <div>
-  <div v-if="avgData && 'symbol' in avgData" class="mb-6">
+  <div v-if="values && 'symbol' in values" class="mb-6">
     <h1 class="text-teal-900 text-xl sm:text-4xl font-bold font-sans mb-6">
-      <span class="bg-red-500 text-white px-1">{{ avgData['symbol'] }}</span>
-      <span>{{ avgData['long_name']}}</span>
+      <span class="bg-red-500 text-white px-1">{{ values['symbol'] }}</span>
+      <span>{{ values['long_name']}}</span>
     </h1>
 
-    <chart-prices :propSymbol="avgData['symbol']" />
+    <chart-prices :propSymbol="values['symbol']" />
   </div>
-  <table v-if="avgData && 'averages' in avgData" class="table-fixed w-full mb-6">
-    <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left p-3">Unit</th>
-      <th class="w-1/6 text-left p-3">Start</th>
-      <th class="w-1/6 text-left p-3">End</th>
-      <th class="w-1/6 text-left p-3">Average</th>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">High intra day</td>
-      <td class="p-3">{{ avgData['averages']['high_intra_day']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_intra_day']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_intra_day']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">High 10 days</td>
-      <td class="p-3">{{ avgData['averages']['high_ten_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_ten_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_ten_days']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">High 30 days</td>
-      <td class="p-3">{{ avgData['averages']['high_thirty_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_thirty_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['high_thirty_days']['value'] }} EUR</td>
-    </tr>
+
+  <table v-if="values && 'averages' in values" class="border-collapse w-full">
+    <thead class="bg-gray-700 text-white text-md">
+      <tr class="hidden sm:table-row">
+        <th colspan="1" class="text-left">Ticker</th>
+        <th colspan="1" class="text-left">Date</th>
+        <th colspan="1" class="text-left">Price</th>
+        <th colspan="1" class="text-left">Percentage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-3 sm:mb-0">
+        <td class="flex bg-gray-700 text-white w-full">
+          <span class="w-full text-md sm:text-xl font-bold break-words p-1">
+            High averages
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            1 day
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['high_intra_day']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['high_intra_day']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['high_intra_day']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-300 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            10 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['high_ten_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['high_ten_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['high_ten_days']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            30 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['high_thirty_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['high_thirty_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['high_thirty_days']['value'] }} EUR
+          </span>
+        </td>
+      </tr>
+      <tr class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-3 sm:mb-0">
+        <td class="flex bg-gray-700 text-white w-full">
+          <span class="w-full text-md sm:text-xl font-bold break-words p-1">
+            Low averages
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            1 day
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['low_intra_day']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['low_intra_day']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['low_intra_day']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-300 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            10 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['low_ten_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['low_ten_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['low_ten_days']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            30 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['low_thirty_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['low_thirty_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['low_thirty_days']['value'] }} EUR
+          </span>
+        </td>
+      </tr>
+      <tr class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-3 sm:mb-0">
+        <td class="flex bg-gray-700 text-white w-full">
+          <span class="w-full text-md sm:text-xl font-bold break-words p-1">
+            Open averages
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            1 day
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['open_intra_day']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['open_intra_day']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['open_intra_day']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-300 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            10 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['open_ten_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['open_ten_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['open_ten_days']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            30 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['open_thirty_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['open_thirty_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['open_thirty_days']['value'] }} EUR
+          </span>
+        </td>
+      </tr>
+      <tr class="flex sm:table-row flex-row sm:flex-row flex-wrap sm:flex-no-wrap mb-3 sm:mb-0">
+        <td class="flex bg-gray-700 text-white w-full">
+          <span class="w-full text-md sm:text-xl font-bold break-words p-1">
+            Close averages
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            1 day
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['close_intra_day']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['close_intra_day']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['close_intra_day']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-300 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            10 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['close_ten_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['close_ten_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['close_ten_days']['value'] }} EUR
+          </span>
+        </td>
+        <td class="flex bg-gray-100 text-gray-900 w-full">
+          <span class="w-3/12 p-1">
+            30 days
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['close_thirty_days']['end'] }}
+          </span>
+          <span class="w-3/12 p-1">
+            {{ values['averages']['close_thirty_days']['start'] }}
+          </span>
+          <span class="w-3/12 text-right font-bold p-1">
+            {{ values['averages']['close_thirty_days']['value'] }} EUR
+          </span>
+        </td>
+      </tr>
+    </tbody>
   </table>
-  <table v-if="avgData && 'averages' in avgData" class="table-fixed w-full mb-6">
-    <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left p-3">Unit</th>
-      <th class="w-1/6 text-left p-3">Start</th>
-      <th class="w-1/6 text-left p-3">End</th>
-      <th class="w-1/6 text-left p-3">Average</th>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Low intra day</td>
-      <td class="p-3">{{ avgData['averages']['low_intra_day']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_intra_day']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_intra_day']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Low 10 days</td>
-      <td class="p-3">{{ avgData['averages']['low_ten_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_ten_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_ten_days']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Low 30 days</td>
-      <td class="p-3">{{ avgData['averages']['low_thirty_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_thirty_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['low_thirty_days']['value'] }} EUR</td>
-    </tr>
-  </table>
-  <table v-if="avgData && 'averages' in avgData" class="table-fixed w-full mb-6">
-    <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left p-3">Unit</th>
-      <th class="w-1/6 text-left p-3">Start</th>
-      <th class="w-1/6 text-left p-3">End</th>
-      <th class="w-1/6 text-left p-3">Average</th>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Open intra day</td>
-      <td class="p-3">{{ avgData['averages']['open_intra_day']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_intra_day']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_intra_day']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Open 10 days</td>
-      <td class="p-3">{{ avgData['averages']['open_ten_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_ten_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_ten_days']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Open 30 days</td>
-      <td class="p-3">{{ avgData['averages']['open_thirty_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_thirty_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['open_thirty_days']['value'] }} EUR</td>
-    </tr>
-  </table>
-  <table v-if="avgData && 'averages' in avgData" class="table-fixed w-full mb-6">
-    <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left p-3">Unit</th>
-      <th class="w-1/6 text-left p-3">Start</th>
-      <th class="w-1/6 text-left p-3">End</th>
-      <th class="w-1/6 text-left p-3">Average</th>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Close intra day</td>
-      <td class="p-3">{{ avgData['averages']['close_intra_day']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_intra_day']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_intra_day']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Close 10 days</td>
-      <td class="p-3">{{ avgData['averages']['close_ten_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_ten_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_ten_days']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Close 30 days</td>
-      <td class="p-3">{{ avgData['averages']['close_thirty_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_thirty_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['close_thirty_days']['value'] }} EUR</td>
-    </tr>
-  </table>
-  <table v-if="avgData && 'averages' in avgData" class="table-fixed w-full mb-6">
-    <tr class="bg-gray-700 text-white text-md">
-      <th class="w-2/6 text-left p-3">Unit</th>
-      <th class="w-1/6 text-left p-3">Start</th>
-      <th class="w-1/6 text-left p-3">End</th>
-      <th class="w-1/6 text-left p-3">Average</th>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Adjust close intra day</td>
-      <td class="p-3">{{ avgData['averages']['adjust_intra_day']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_intra_day']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_intra_day']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-100 text-lg">
-      <td class="font-bold p-3">Adjust close 10 days</td>
-      <td class="p-3">{{ avgData['averages']['adjust_ten_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_ten_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_ten_days']['value'] }} EUR</td>
-    </tr>
-    <tr class="bg-gray-300 text-lg">
-      <td class="font-bold p-3">Adjust close 30 days</td>
-      <td class="p-3">{{ avgData['averages']['adjust_thirty_days']['end'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_thirty_days']['start'] }}</td>
-      <td class="p-3">{{ avgData['averages']['adjust_thirty_days']['value'] }} EUR</td>
-    </tr>
-  </table>
-  <div v-if="avgData && 'symbol' in avgData" class="mb-6">
+
+  <div v-if="values && 'symbol' in values" class="mb-6">
     <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Volume chart</h2>
-    <chart-volumes :propSymbol="avgData['symbol']" />
+    <chart-volumes :propSymbol="values['symbol']" />
   </div>
   <div class="text-lg">
     <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Address</h2>
-    <p v-if="avgData && 'long_name' in avgData" class="mb-1">{{ avgData['long_name'] }}</p>
-    <p v-if="avgData && 'address' in avgData" class="mb-1">{{ avgData['address'] }}</p>
+    <p v-if="values && 'long_name' in values" class="mb-1">{{ values['long_name'] }}</p>
+    <p v-if="values && 'address' in values" class="mb-1">{{ values['address'] }}</p>
     <p class="mb-1">
-      <span v-if="avgData && 'zip' in avgData">{{ avgData['zip'] }}</span>
-      <span v-if="avgData && 'city' in avgData">{{ avgData['city'] }}</span>
+      <span v-if="values && 'zip' in values">{{ values['zip'] }}</span>
+      <span v-if="values && 'city' in values">{{ values['city'] }}</span>
     </p>
-    <p v-if="avgData && 'country' in avgData" class="mb-1">{{ avgData['country'] }}</p>
-    <p v-if="avgData && 'website' in avgData" class="mb-3">
-      <a :href="avgData['website']" target="_blank" class="text-blue-500 hover:text-blue-700 focus:outline-none">{{ avgData['website'] }}</a>
+    <p v-if="values && 'country' in values" class="mb-1">{{ values['country'] }}</p>
+    <p v-if="values && 'website' in values" class="mb-3">
+      <a :href="values['website']" target="_blank" class="text-blue-500 hover:text-blue-700 focus:outline-none">{{ values['website'] }}</a>
     </p>
     <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Description</h2>
-    <p v-if="avgData && 'long_business_summary' in avgData">{{ avgData['long_business_summary'] }}</p>
+    <p v-if="values && 'long_business_summary' in values">{{ values['long_business_summary'] }}</p>
   </div>
 </div>
 </template>
@@ -164,12 +244,13 @@
 export default {
   data() {
     return {
-      avgData: []
+      values: []
     }
   },
   created() {
     this.$axios.$get(`${process.env.API_URL}/average/${this.$route.params.symbol}`).then(res => {
-      this.avgData = res
+      console.log(res)
+      this.values = res
     })
   }
 }
