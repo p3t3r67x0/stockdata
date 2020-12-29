@@ -9,6 +9,7 @@
         <th colspan="1" class="text-left p-3">Ticker</th>
         <th colspan="1" class="text-left p-3">Company</th>
         <th colspan="1" class="text-left p-3">Industry</th>
+        <th colspan="1" class="text-left p-3">Clode date</th>
         <th colspan="1" class="text-right p-3">Close price</th>
       </tr>
     </thead>
@@ -22,6 +23,9 @@
         </td>
         <td class="text-left p-3">
           {{ value['industry'] }}
+        </td>
+        <td class="text-left p-3">
+          {{ value['timestamp'] }}
         </td>
         <td class="text-right p-3">
           {{ value['close_eur'] }} EUR
