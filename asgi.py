@@ -212,18 +212,17 @@ async def read_monthly_volume(db, symbol, start, end):
     add = 60 * 60000
 
     res = await db['data'].aggregate([
-        {'$match': {'symbol': symbol, 'timestamp': {
-            '$lt': start, '$gte': end}}},
+        {'$match': {'symbol': symbol, 'timestamp':
+                    {'$lt': start, '$gte': end}}},
         {'$group':
-         {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
-                  'mth': {'$month': {'$add': ['$timestamp', add]}},
-                  'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}}},
-          'high': {'$max': '$high_eur'},
-          'low': {'$min': '$low_eur'},
-          'open': {'$first': '$open_eur'},
-          'close': {'$last': '$close_eur'},
-          'volume': {'$sum': '$volume'}
-          }},
+            {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
+                     'mth': {'$month': {'$add': ['$timestamp', add]}},
+                     'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}}},
+             'high': {'$max': '$high_eur'},
+             'low': {'$min': '$low_eur'},
+             'open': {'$first': '$open_eur'},
+             'close': {'$last': '$close_eur'},
+             'volume': {'$sum': '$volume'}}},
         {'$sort': {'_id.year': 1, '_id.mth': 1, '_id.dom': 1}},
         {'$limit': 100}
     ]).to_list(length=100)
@@ -233,17 +232,17 @@ async def read_monthly_volume(db, symbol, start, end):
 
 async def read_newcommer_closes(db):
     res = await db['data'].aggregate([
-        {'$match': {'close_eur': {'$lte': 4.60}}}, {'$sort': {
-            'close_eur': 1, 'timestamp': 1}},
-        {'$group': {'_id': '$symbol', 'close_eur': {'$first': '$close_eur'},
-                    'timestamp': {'$first': '$timestamp'}}},
+        {'$match': {'close_eur': {'$lte': 4.60}}},
+        {'$group':
+            {'_id': '$symbol', 'close_eur': {'$last': '$close_eur'},
+             'timestamp': {'$max': '$timestamp'}}},
         {'$lookup': {'from': 'info', 'localField': '_id',
                      'foreignField': 'symbol', 'as': 'info'}},
         {'$unwind': '$info'},
-        {'$project': {'industry': '$info.industry',
-                      'long_name': '$info.long_name',
-                      'close_eur': '$close_eur'}},
-        {'$sort': {'close_eur': -1, 'score': {'$meta': 'textScore'}}},
+        {'$project':
+            {'industry': '$info.industry', 'timestamp': '$timestamp',
+             'long_name': '$info.long_name', 'close_eur': '$close_eur'}},
+        {'$sort': {'close_eur': {'$meta': 'textScore'}}},
         {'$limit': 250}
     ]).to_list(length=250)
 
@@ -259,21 +258,21 @@ async def read_market_index(db, index, start, end):
         {'$project': {
             'symbol': '$symbol', 'long_name': '$long_name', 'data': '$data'}},
         {'$match': {'data.timestamp': {'$lte': start, '$gte': end}}},
-        {'$group': {
-            '_id': {'symbol': '$symbol',
-                    'long_name': '$long_name',
-                    'year': {'$year': '$data.timestamp'},
-                    'mth': {'$month': '$data.timestamp'},
-                    'dom': {
-                        '$subtract': [
-                            {'$dayOfMonth': '$data.timestamp'}, {
-                                '$mod': [{
-                                    '$dayOfMonth': '$data.timestamp'}, 1]}
-                        ]}},
-            'high': {'$max': '$data.high_eur'},
-            'low': {'$min': '$data.low_eur'},
-            'open': {'$first': '$data.open_eur'},
-            'close': {'$last': '$data.close_eur'}}},
+        {'$group':
+            {'_id':
+                {'symbol': '$symbol', 'long_name': '$long_name',
+                 'year': {'$year': '$data.timestamp'},
+                 'mth': {'$month': '$data.timestamp'},
+                 'dom':
+                     {'$subtract': [
+                         {'$dayOfMonth': '$data.timestamp'}, {
+                             '$mod': [{
+                                 '$dayOfMonth': '$data.timestamp'}, 1]}
+                     ]}},
+             'high': {'$max': '$data.high_eur'},
+             'low': {'$min': '$data.low_eur'},
+             'open': {'$first': '$data.open_eur'},
+             'close': {'$last': '$data.close_eur'}}},
         {'$sort': {'year': 1, '_id.mth': 1, '_id.dom': 1}},
         {'$limit': 2000}
     ]).to_list(length=2000)
@@ -474,6 +473,10 @@ async def list_all_newcommers():
     for v in values:
         if 'close_eur' in v:
             v['close_eur'] = format(round(v['close_eur'], 2), '.2f')
+        if 'timestamp' in v:
+            v['timestamp'] = v['timestamp'].date()
+        if 'industry' in v:
+            v['industry'] = v['industry'].replace('—', '-')
 
         data.append(v)
 
