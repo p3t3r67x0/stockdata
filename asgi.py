@@ -274,8 +274,8 @@ async def read_market_index(db, index, start, end):
              'open': {'$first': '$data.open_eur'},
              'close': {'$last': '$data.close_eur'}}},
         {'$sort': {'year': 1, '_id.mth': 1, '_id.dom': 1}},
-        {'$limit': 2000}
-    ]).to_list(length=2000)
+        {'$limit': 250}
+    ]).to_list(length=250)
 
     return res
 
@@ -284,26 +284,26 @@ async def read_daily_volume(db, symbol, start, end):
     add = 60 * 60000
 
     res = await db['data'].aggregate([
-        {'$match': {'symbol': symbol, 'timestamp': {
-            '$lt': start, '$gte': end}}},
+        {'$match':
+            {'symbol': symbol, 'timestamp': {'$lt': start, '$gte': end}}},
         {'$group':
-         {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
-                  'mth': {'$month': {'$add': ['$timestamp', add]}},
-                  'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}},
-                  'hrs': {'$hour': {'$add': ['$timestamp', add]}},
-                  'min': {'$subtract': [{'$minute': {'$add': [
-                      '$timestamp', add]}}, {'$mod': [
-                          {'$minute': {'$add': ['$timestamp', add]}}, 15]}
-                  ]}},
-          'high': {'$max': '$high_eur'},
-          'low': {'$min': '$low_eur'},
-          'open': {'$first': '$open_eur'},
-          'close': {'$last': '$close_eur'},
-          'volume': {'$sum': '$volume'}
-          }},
-        {'$sort': {
-            'year': 1, '_id.mth': 1, '_id.dom': 1, '_id.hrs': 1, '_id.min': 1}}
-    ]).to_list(length=100)
+            {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
+                     'mth': {'$month': {'$add': ['$timestamp', add]}},
+                     'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}},
+                     'hrs': {'$hour': {'$add': ['$timestamp', add]}},
+                     'min': {'$subtract': [{'$minute': {'$add': [
+                         '$timestamp', add]}}, {'$mod': [
+                             {'$minute': {'$add': ['$timestamp', add]}}, 15]}
+                     ]}},
+             'high': {'$max': '$high_eur'},
+             'low': {'$min': '$low_eur'},
+             'open': {'$first': '$open_eur'},
+             'close': {'$last': '$close_eur'},
+             'volume': {'$sum': '$volume'}}},
+        {'$sort':
+            {'year': 1, '_id.mth': 1, '_id.dom': 1,
+             '_id.hrs': 1, '_id.min': 1}}
+    ]).to_list(length=250)
 
     return res
 
@@ -374,6 +374,7 @@ async def read_percentages(db, index):
 
     dr = await get_date_ranges(interval=2, period=1)
 
+    # TODO: here must be some date corrections
     res1 = await read_market_index(db, index, dr[0]['start'], dr[0]['end'])
     res2 = await read_market_index(db, index, dr[1]['start'], dr[1]['end'])
 
