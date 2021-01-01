@@ -26,7 +26,7 @@
             </span>
           </span>
           <span class="w-8/12 flex text-gray-900 text-md sm:text-xl p-1">
-            
+
           </span>
         </td>
       </tr>
