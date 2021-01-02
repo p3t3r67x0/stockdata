@@ -1,6 +1,6 @@
 <template>
 <div>
-  <h1 class="text-teal-900 text-xl lg:text-4xl font-bold font-sans mb-6">
+  <h1 class="text-teal-900 text-xl sm:text-4xl font-bold font-sans mb-6">
     <span class="text-gray-700">Trending on Stocklify</span>
   </h1>
   <table class="lg:table-fixed border-collapse w-full">
@@ -17,7 +17,7 @@
         <td class="group-hover:bg-blue-300 flex lg:table-cell bg-gray-700 lg:bg-transparent w-full lg:w-auto">
           <div class="flex justify-between lg:justify-start w-full p-1 lg:p-2">
             <span class="order-1 lg:order-2 float-left font-bold lg:font-normal text-white lg:text-gray-900 break-words p-1 lg:py-0">{{ value['long_name'] }}</span>
-            <span class="order-2 lg:order-1 float-left text-white text-right">
+            <span class="order-2 lg:order-1 float-left text-white text-right p-1">
               <span class="bg-pink-500 font-sans text-white p-1">{{ value['_id'] }}</span>
             </span>
           </div>

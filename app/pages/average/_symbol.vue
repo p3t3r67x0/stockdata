@@ -249,7 +249,6 @@ export default {
   },
   created() {
     this.$axios.$get(`${process.env.API_URL}/average/${this.$route.params.symbol}`).then(res => {
-      console.log(res)
       this.values = res
     })
   }
