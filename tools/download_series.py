@@ -33,6 +33,23 @@ def download_dataset(symbol, start, end):
     return d
 
 
+def retrieve_currency(info):
+    cur = None
+
+    if 'currency' in info and info['currency'] == 'INR':
+        cur = info['currency']
+    elif 'currency' in info and info['currency'] == 'HKD':
+        cur = info['currency']
+    elif 'currency' in info and info['currency'] == 'USD':
+        cur = info['currency']
+    elif 'currency' in info and info['currency'] == 'EUR':
+        cur = info['currency']
+    elif 'exchange' in info and info['exchange'] == 'GER':
+        cur = 'EUR'
+
+    return cur
+
+
 def read_currency_value(db, symbol, timestamp, default_timezone):
     tsz = timestamp.astimezone(timezone(default_timezone))
     ts = tsz.replace(tzinfo=None).to_pydatetime()
@@ -79,8 +96,9 @@ def insert_dataframes(db, d, s):
     for i in d.iterrows():
         if sys.argv[1] == 'data' and s not in [inr, hkd, usd]:
             tz = info['exchange_timezone_name']
+            cur = retrieve_currency(info)
 
-            if 'currency' in info and info['currency'] == 'USD':
+            if cur == 'USD':
                 res = multiply_currencies(db, usd, i, tz)
 
                 high_eur = res['high']
@@ -89,7 +107,7 @@ def insert_dataframes(db, d, s):
                 close_eur = res['close']
                 adjust_close_eur = res['adjust_close']
 
-            elif 'currency' in info and info['currency'] == 'HKD':
+            elif cur == 'HKD':
                 res = multiply_currencies(db, hkd, i, tz)
 
                 high_eur = res['high']
@@ -98,7 +116,7 @@ def insert_dataframes(db, d, s):
                 close_eur = res['close']
                 adjust_close_eur = res['adjust_close']
 
-            elif 'currency' in info and info['currency'] == 'INR':
+            elif cur == 'INR':
                 res = multiply_currencies(db, inr, i, tz)
 
                 high_eur = res['high']
@@ -107,7 +125,7 @@ def insert_dataframes(db, d, s):
                 close_eur = res['close']
                 adjust_close_eur = res['adjust_close']
 
-            elif 'currency' in info and info['currency'] == 'EUR':
+            elif cur == 'EUR':
                 high_eur = i[1][1]
                 low_eur = i[1][2]
                 open_eur = i[1][0]

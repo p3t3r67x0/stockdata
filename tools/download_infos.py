@@ -421,7 +421,7 @@ db['info'].create_index(
 
 
 for symbol in load_tickers():
-    symbol = symbol.strip()
+    symbol = symbol.upper().strip()
     res = read_symbol(db, symbol)
 
     if res is not None:
@@ -431,8 +431,8 @@ for symbol in load_tickers():
 
     try:
         info = yf.Ticker(symbol)
-    except IndexError:
-        continue
 
-    insert_essential(db, symbol, info.isin)
-    update_information(db, symbol, info.info)
+        insert_essential(db, symbol, info.isin)
+        update_information(db, symbol, info.info)
+    except (IndexError, ValueError):
+        continue
