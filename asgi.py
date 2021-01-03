@@ -55,61 +55,32 @@ async def substract_hours(dates):
             d['start'] = d['start'] - timedelta(days=1)
             d['end'] = d['end'] - timedelta(days=1)
 
-    dates = await substract_holidays(dates)
-    dates = await substract_weekends(dates)
-
     return dates
 
 
-async def substract_weekends(dates):
-    for d in dates:
-        wkd_start = d['start'].weekday()
-        wkd_end = d['end'].weekday()
-
-        if wkd_start == 5:
-            d['start'] = d['start'] - timedelta(days=1)
-        elif wkd_start == 6:
-            d['start'] = d['start'] - timedelta(days=2)
-
-        if wkd_end == 5:
-            d['end'] = d['end'] - timedelta(days=1)
-        elif wkd_end == 6:
-            d['end'] = d['end'] - timedelta(days=2)
-
-    return dates
-
-
-async def substract_holidays(dates):
+async def previous_working_day(check_day):
     hol = holidays.HolidayBase()
-    hol.append({datetime(date.today().year, 1, 1): 'Neujahr'})
-    hol.append({datetime(date.today().year, 4, 10): 'Karfreitag'})
-    hol.append({datetime(date.today().year, 4, 13): 'Ostermontag'})
-    hol.append({datetime(date.today().year, 5, 1): 'Tag der Arbeit'})
-    hol.append({datetime(date.today().year, 5, 21): 'Christi Himmelfahrt'})
-    hol.append({datetime(date.today().year, 6, 1): 'Pfingstmontag'})
-    hol.append({datetime(date.today().year, 10, 3): 'Tag der dt. Einheit'})
-    hol.append({datetime(date.today().year, 12, 24): 'Heiligabend'})
-    hol.append({datetime(date.today().year, 12, 25): '1. Weihnachtsfeiertag'})
-    hol.append({datetime(date.today().year, 12, 26): '2. Weihnachtsfeiertag'})
-    hol.append({datetime(date.today().year, 12, 31): 'Silvester'})
 
-    while any([True if x['start'] in hol or x['end']
-               in hol else False for x in dates]):
-        for d in dates:
-            if d['start'] in hol and d['end'] in hol:
-                d['start'] = d['start'] - timedelta(days=1)
-                d['end'] = d['end'] - timedelta(days=1)
-            elif d['start'] in hol:
-                d['start'] = d['start'] - timedelta(days=1)
-                d['end'] = d['end'] - timedelta(days=1)
-            elif d['end'] in hol:
-                d['start'] = d['start']
-                d['end'] = d['end'] - timedelta(days=1)
-            else:
-                d['start'] = d['start']
-                d['end'] = d['end']
+    for i in range(date.today().year - 3, date.today().year + 3):
+        hol.append({datetime(i, 1, 1): 'Neujahr'})
+        hol.append({datetime(i, 4, 10): 'Karfreitag'})
+        hol.append({datetime(i, 4, 13): 'Ostermontag'})
+        hol.append({datetime(i, 5, 1): 'Tag der Arbeit'})
+        hol.append({datetime(i, 5, 21): 'Christi Himmelfahrt'})
+        hol.append({datetime(i, 6, 1): 'Pfingstmontag'})
+        hol.append({datetime(i, 10, 3): 'Tag der dt. Einheit'})
+        hol.append({datetime(i, 12, 24): 'Heiligabend'})
+        hol.append({datetime(i, 12, 25): '1. Weihnachtsfeiertag'})
+        hol.append({datetime(i, 12, 26): '2. Weihnachtsfeiertag'})
+        hol.append({datetime(i, 12, 31): 'Silvester'})
 
-    return dates
+    offset = max(1, (check_day.weekday() + 6) % 7 - 3)
+    most_recent = check_day - timedelta(offset)
+
+    if most_recent not in hol:
+        return most_recent
+    else:
+        return await previous_working_day(most_recent)
 
 
 async def get_date_ranges(interval, period):
@@ -125,23 +96,22 @@ async def get_date_ranges(interval, period):
         end = start - timedelta(days=1)
 
     dtc_start = datetime.combine(start.date(), datetime.min.time())
-    dtc_end = datetime.combine(end.date(), datetime.min.time())
+    dtc_end = datetime.combine(end.date(), datetime.max.time())
 
-    dates.append({'start': dtc_start, 'end': dtc_end})
+    s = await previous_working_day(dtc_start)
+    e = await previous_working_day(dtc_end)
+
+    dates.append({'start': s, 'end': e})
 
     if period > 0:
         for i in range(1, interval, period):
-            dtc_start = datetime.combine(start.date(), datetime.min.time())
-            dtc_end = datetime.combine(end.date(), datetime.min.time())
+            dtc_start = datetime.combine(s.date(), datetime.min.time())
+            dtc_end = datetime.combine(e.date(), datetime.max.time())
 
-            dt_start = dtc_start - timedelta(days=1 + i)
-            dt_end = dtc_end - timedelta(days=1 + i)
+            start = await previous_working_day(dtc_start)
+            end = await previous_working_day(dtc_end)
 
-            dates.append({'start': dt_start, 'end': dt_end})
-
-    dates = await substract_holidays(dates)
-    dates = await substract_weekends(dates)
-    dates = await substract_hours(dates)
+            dates.append({'start': start, 'end': end})
 
     return dates
 
@@ -257,7 +227,7 @@ async def read_market_index(db, index, start, end):
         {'$unwind': '$data'},
         {'$project': {
             'symbol': '$symbol', 'long_name': '$long_name', 'data': '$data'}},
-        {'$match': {'data.timestamp': {'$lte': start, '$gte': end}}},
+        {'$match': {'data.timestamp': {'$gte': start, '$lte': end}}},
         {'$group':
             {'_id':
                 {'symbol': '$symbol', 'long_name': '$long_name',
@@ -265,17 +235,15 @@ async def read_market_index(db, index, start, end):
                  'mth': {'$month': '$data.timestamp'},
                  'dom':
                      {'$subtract': [
-                         {'$dayOfMonth': '$data.timestamp'}, {
-                             '$mod': [{
-                                 '$dayOfMonth': '$data.timestamp'}, 1]}
-                     ]}},
+                         {'$dayOfMonth': '$data.timestamp'},
+                         {'$mod': [{'$dayOfMonth': '$data.timestamp'}, 1]}]}},
              'high': {'$max': '$data.high_eur'},
              'low': {'$min': '$data.low_eur'},
              'open': {'$first': '$data.open_eur'},
              'close': {'$last': '$data.close_eur'}}},
-        {'$sort': {'year': 1, '_id.mth': 1, '_id.dom': 1}},
-        {'$limit': 250}
-    ]).to_list(length=250)
+        {'$sort': {'_id.year': 1, '_id.mth': 1, '_id.dom': 1}},
+        {'$limit': 25000}
+    ]).to_list(length=25000)
 
     return res
 
@@ -375,6 +343,8 @@ async def read_percentages(db, index):
     dr = await get_date_ranges(interval=2, period=1)
 
     # TODO: here must be some date corrections
+    print(index, dr[0]['start'], dr[0]['end'])
+    print(index, dr[1]['start'], dr[1]['end'])
     res1 = await read_market_index(db, index, dr[0]['start'], dr[0]['end'])
     res2 = await read_market_index(db, index, dr[1]['start'], dr[1]['end'])
 
@@ -399,6 +369,7 @@ async def read_percentages(db, index):
 
         for j in data:
             if 'symbol' in j and j['symbol'] == i['_id']['symbol']:
+                print(j['symbol'], i['_id']['symbol'])
                 obj = {'date': d}
 
                 obj['close'] = round(i['close'], 2)
@@ -406,14 +377,20 @@ async def read_percentages(db, index):
                 j['data'].append(obj)
 
     for d in data:
-        percent = percentage(d['data'][0]['close'], d['data'][1]['close'])
+        try:
+            percent = percentage(d['data'][0]['close'], d['data'][1]['close'])
 
-        if d['data'][0]['close'] < d['data'][1]['close']:
-            d['percent'] = round(percent * - percent, 2)
-        else:
-            d['percent'] = round(percent, 2)
+            if d['data'][0]['close'] < d['data'][1]['close']:
+                d['percent'] = round(percent * - percent, 2)
+            else:
+                d['percent'] = round(percent, 2)
+        except IndexError:
+            del d
 
-    data.sort(key=lambda x: x['percent'], reverse=True)
+    try:
+        data.sort(key=lambda x: x['percent'], reverse=True)
+    except KeyError:
+        pass
 
     return data
 
