@@ -53,8 +53,8 @@ def retrieve_currency(info):
 def read_currency_value(db, symbol, timestamp, default_timezone):
     tsz = timestamp.astimezone(timezone(default_timezone))
     ts = tsz.replace(tzinfo=None).to_pydatetime()
-    start = ts - timedelta(hours=2)
-    end = ts + timedelta(hours=2)
+    start = ts - timedelta(hours=8)
+    end = ts + timedelta(hours=8)
 
     res = db['forex'].aggregate([
         {'$match': {'symbol': symbol, 'timestamp': {
