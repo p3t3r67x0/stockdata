@@ -58,7 +58,7 @@ async def substract_hours(dates):
     return dates
 
 
-async def previous_working_day(check_day):
+async def previous_working_day(day):
     hol = holidays.HolidayBase()
 
     for i in range(date.today().year - 3, date.today().year + 3):
@@ -74,12 +74,19 @@ async def previous_working_day(check_day):
         hol.append({datetime(i, 12, 26): '2. Weihnachtsfeiertag'})
         hol.append({datetime(i, 12, 31): 'Silvester'})
 
-    offset = max(1, (check_day.weekday() + 6) % 7 - 3)
-    most_recent = check_day - timedelta(offset)
+    weekday = day.weekday()
+
+    if weekday == 5:
+        most_recent = day - timedelta(days=1)
+    elif weekday == 6:
+        most_recent = day - timedelta(days=2)
+    else:
+        most_recent = day
 
     if most_recent not in hol:
         return most_recent
     else:
+        most_recent = most_recent - timedelta(days=1)
         return await previous_working_day(most_recent)
 
 
@@ -87,31 +94,31 @@ async def get_date_ranges(interval, period):
     dates = []
 
     now = datetime.now()
-    tsz = now.astimezone(timezone('Europe/London'))
+    tsz = now.astimezone(timezone('Europe/Berlin'))
     start = tsz.replace(tzinfo=None)
+    dtc_start = datetime.combine(start.date(), datetime.min.time())
+    dtc_end = datetime.combine(start.date(), datetime.max.time())
 
     if period > 1:
-        end = start - timedelta(days=period)
-    else:
-        end = start - timedelta(days=1)
-
-    dtc_start = datetime.combine(start.date(), datetime.min.time())
-    dtc_end = datetime.combine(end.date(), datetime.max.time())
+        dtc_end = dtc_end - timedelta(days=period)
 
     s = await previous_working_day(dtc_start)
     e = await previous_working_day(dtc_end)
 
     dates.append({'start': s, 'end': e})
 
-    if period > 0:
+    if interval > 0:
         for i in range(1, interval, period):
-            dtc_start = datetime.combine(s.date(), datetime.min.time())
-            dtc_end = datetime.combine(e.date(), datetime.max.time())
+            dtd_start = dtc_start - timedelta(days=i)
+            dtd_end = dtc_end - timedelta(days=i)
 
-            start = await previous_working_day(dtc_start)
-            end = await previous_working_day(dtc_end)
+            dtc_start = datetime.combine(dtd_start.date(), datetime.min.time())
+            dtc_end = datetime.combine(dtd_end.date(), datetime.max.time())
 
-            dates.append({'start': start, 'end': end})
+            s = await previous_working_day(dtc_start)
+            e = await previous_working_day(dtc_end)
+
+            dates.append({'start': s, 'end': e})
 
     return dates
 
@@ -119,11 +126,12 @@ async def get_date_ranges(interval, period):
 async def read_average(db, symbol, field, period):
     data = {}
 
-    dr = await get_date_ranges(interval=1, period=int(period))
+    dr = await get_date_ranges(interval=1, period=period)
+    print(dr)
 
     res = await db['data'].aggregate([
-        {'$match': {'symbol': symbol, 'timestamp': {
-            '$lt': dr[0]['start'], '$gte': dr[0]['end']}}},
+        {'$match': {'symbol': symbol, 'timestamp':
+                    {'$lte': dr[0]['end'], '$gte': dr[0]['start']}}},
         {'$group': {'_id': '$symbol', 'average': {'$avg': f'${field}'}}},
         {'$limit': 1}]).to_list(length=1)
 
@@ -225,9 +233,9 @@ async def read_market_index(db, index, start, end):
         {'$lookup': {'from': 'data', 'localField': 'symbol',
                      'foreignField': 'symbol', 'as': 'data'}},
         {'$unwind': '$data'},
-        {'$project': {
-            'symbol': '$symbol', 'long_name': '$long_name', 'data': '$data'}},
-        {'$match': {'data.timestamp': {'$gte': start, '$lte': end}}},
+        {'$project':
+            {'symbol': '$symbol', 'long_name': '$long_name', 'data': '$data'}},
+        {'$match': {'data.timestamp': {'$lte': end, '$gte': start}}},
         {'$group':
             {'_id':
                 {'symbol': '$symbol', 'long_name': '$long_name',
@@ -342,9 +350,6 @@ async def read_percentages(db, index):
 
     dr = await get_date_ranges(interval=2, period=1)
 
-    # TODO: here must be some date corrections
-    print(index, dr[0]['start'], dr[0]['end'])
-    print(index, dr[1]['start'], dr[1]['end'])
     res1 = await read_market_index(db, index, dr[0]['start'], dr[0]['end'])
     res2 = await read_market_index(db, index, dr[1]['start'], dr[1]['end'])
 
@@ -369,7 +374,6 @@ async def read_percentages(db, index):
 
         for j in data:
             if 'symbol' in j and j['symbol'] == i['_id']['symbol']:
-                print(j['symbol'], i['_id']['symbol'])
                 obj = {'date': d}
 
                 obj['close'] = round(i['close'], 2)
@@ -496,6 +500,7 @@ async def average_values(symbol):
         return object
 
     high_intra_day = await read_average(db, symbol, 'high_eur', 1)
+    print(high_intra_day)
     object['high_intra_day'] = high_intra_day
 
     high_ten_days = await read_average(db, symbol, 'high_eur', 10)
