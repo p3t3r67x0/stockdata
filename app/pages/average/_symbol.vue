@@ -6,10 +6,10 @@
       <span>{{ values['long_name']}}</span>
     </h1>
 
-    <chart-prices :propSymbol="values['symbol']" />
+    <chart :propSymbol="values['symbol']" />
   </div>
 
-  <table v-if="values && 'averages' in values" class="border-collapse w-full">
+  <table v-if="values && 'averages' in values" class="border-collapse w-full mb-6">
     <thead class="bg-gray-700 text-white text-md">
       <tr class="hidden sm:table-row">
         <th colspan="1" class="text-left">Ticker</th>
@@ -218,10 +218,6 @@
     </tbody>
   </table>
 
-  <div v-if="values && 'symbol' in values" class="mb-6">
-    <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Volume chart</h2>
-    <chart-volumes :propSymbol="values['symbol']" />
-  </div>
   <div class="text-lg">
     <h2 class="text-teal-900 text-xl font-bold font-sans mb-1">Address</h2>
     <p v-if="values && 'long_name' in values" class="mb-1">{{ values['long_name'] }}</p>

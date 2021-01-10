@@ -16,6 +16,9 @@
     "@nuxtjs/fontawesome": "^1.1.2",
     "core-js": "^3.6.5",
     "nuxt": "^2.14.6",
+    "trading-vue-js": "^1.0.0",
+    "tvjs-overlays": "^0.3.0",
+    "tvjs-xp": "^0.3.0",
     "v-click-outside": "^3.1.2",
     "vue2-frappe": "^1.2.3"
   },

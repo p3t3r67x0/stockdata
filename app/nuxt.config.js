@@ -32,6 +32,9 @@ export default {
   }, {
     src: '@/plugins/frappeCharts',
     ssr: false
+  }, {
+    src: '@/plugins/tradingCharts',
+    ssr: false
   }],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
