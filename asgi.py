@@ -285,12 +285,7 @@ async def read_daily_volume(db, symbol, start, end):
 
 
 async def read_volume_period(db, symbol, period):
-    dates = []
-    high = []
-    low = []
-    open = []
-    close = []
-    volumes = []
+    values = []
 
     dr = await get_date_ranges(interval=1, period=period)
 
@@ -303,46 +298,48 @@ async def read_volume_period(db, symbol, period):
         res = await read_monthly_volume(db, symbol, start, end)
 
     for r in res:
+        array = []
+
         if period == 1:
             dtc = datetime.combine(date(
                 r['_id']['year'], r['_id']['mth'], r['_id']['dom']),
                 time(r['_id']['hrs'], r['_id']['min'], 0))
-            hm = dtc.strftime('%I:%M')
-            dates.append(f'{hm}')
+            array.append(int(dtc.timestamp() * 1000))
         else:
             tm = datetime.min.time()
             dtc = datetime.combine(date(
                 r['_id']['year'], r['_id']['mth'], r['_id']['dom']), tm)
-            dates.append(f'{dtc.day}.{dtc.month}.')
-
-        if r['high'] is not None:
-            high.append(round(r['high'], 2))
-        else:
-            high.append(0)
-
-        if r['low'] is not None:
-            low.append(round(r['low'], 2))
-        else:
-            low.append(0)
+            array.append(int(dtc.timestamp() * 1000))
 
         if r['open'] is not None:
-            open.append(round(r['open'], 2))
+            array.append(round(r['open'], 2))
         else:
-            open.append(0)
+            array.append(0.0)
+
+        if r['high'] is not None:
+            array.append(round(r['high'], 2))
+        else:
+            array.append(0.0)
+
+        if r['low'] is not None:
+            array.append(round(r['low'], 2))
+        else:
+            array.append(0.0)
 
         if r['close'] is not None:
-            close.append(round(r['close'], 2))
+            array.append(round(r['close'], 2))
         else:
-            close.append(0)
+            array.append(0.0)
 
         if r['volume'] is not None and not is_nan(r['volume']):
-            volumes.append(int(r['volume']))
+            array.append(int(r['volume']))
         else:
-            volumes.append(0)
+            array.append(0)
 
-    return {'volumes': volumes, 'dates': dates, 'high': high,
-            'low': low, 'open': open, 'close': close,
-            'start': str(start.date()), 'end': str(end.date())}
+        values.append(array)
+
+    return {'values': values, 'start': str(start.date()),
+            'end': str(end.date())}
 
 
 async def read_percentages(db, index):
