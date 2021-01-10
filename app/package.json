@@ -19,8 +19,7 @@
     "trading-vue-js": "^1.0.0",
     "tvjs-overlays": "^0.3.0",
     "tvjs-xp": "^0.3.0",
-    "v-click-outside": "^3.1.2",
-    "vue2-frappe": "^1.2.3"
+    "v-click-outside": "^3.1.2"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^3.1.0"
