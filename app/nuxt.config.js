@@ -30,9 +30,6 @@ export default {
     src: '@/plugins/vClickOutside',
     ssr: false
   }, {
-    src: '@/plugins/frappeCharts',
-    ssr: false
-  }, {
     src: '@/plugins/tradingCharts',
     ssr: false
   }],
