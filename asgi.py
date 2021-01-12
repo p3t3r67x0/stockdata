@@ -261,16 +261,13 @@ async def read_daily_volume(db, symbol, start, end):
 
     res = await db['data'].aggregate([
         {'$match':
-            {'symbol': symbol, 'timestamp': {'$lt': start, '$gte': end}}},
+            {'symbol': symbol, 'timestamp': {'$lte': end, '$gte': start}}},
         {'$group':
             {'_id': {'year': {'$year': {'$add': ['$timestamp', add]}},
                      'mth': {'$month': {'$add': ['$timestamp', add]}},
                      'dom': {'$dayOfMonth': {'$add': ['$timestamp', add]}},
                      'hrs': {'$hour': {'$add': ['$timestamp', add]}},
-                     'min': {'$subtract': [{'$minute': {'$add': [
-                         '$timestamp', add]}}, {'$mod': [
-                             {'$minute': {'$add': ['$timestamp', add]}}, 15]}
-                     ]}},
+                     'min': {'$minute': {'$add': ['$timestamp', add]}}},
              'high': {'$max': '$high_eur'},
              'low': {'$min': '$low_eur'},
              'open': {'$first': '$open_eur'},
