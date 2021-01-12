@@ -6,7 +6,7 @@
       <span>{{ values['long_name']}}</span>
     </h1>
 
-    <chart :propSymbol="values['symbol']" />
+    <chart :propSymbol="values['symbol']" class="w-full" />
   </div>
 
   <table v-if="values && 'averages' in values" class="border-collapse w-full mb-6">
